@@ -1,32 +1,32 @@
 const {Vector3} = THREE
 
-// Minimum time step, for accurate simulation
-const MIN_DT = 0.0001
+// Time step, for accurate simulation
+const SIM_DT = 0.0001
 // Actual length of a time step that we record
 const STEP_DT = 0.01
 
 // Gravity, in m/s^2
 const GRAVITY = -9.807
 
+
 /**
- * Utility class that takes the initial state of a disc, and simulates its movement until
- * it hits the ground.
+ * Takes initial conditions, and calculates the path of the disc until it hits the ground.
  */
-class Disc {
-	constructor() {
-		this.pos = new Vector3()
-		this.vel = new Vector3()
+class DiscCalculator {
+	constructor(pos, vel) {
+		this.pos = pos.clone()
+		this.vel = vel.clone()
 		this.time = 0
 	}
 
 	run() {
-		const steps = []
+		this.steps = []
 		while(this.pos.y > 0) {
 			this.step()
-			steps.push(this.copyState())
+			this.steps.push(this.copyState())
 		}
 
-		return steps
+		return this.steps
 	}
 
 	// Get an object with a copy of the current state of the disc
@@ -46,18 +46,18 @@ class Disc {
 		}
 	}
 
-	// Step forward one MIN_DT from the current state
+	// Step forward one SIM_DT from the current state
 	__minStep() {
 		const force = new Vector3(0, GRAVITY, 0)
 
-		force.multiplyScalar(MIN_DT)
+		force.multiplyScalar(SIM_DT)
 		this.vel.add(force)
 
-		const dp = this.vel.clone().multiplyScalar(MIN_DT)
+		const dp = this.vel.clone().multiplyScalar(SIM_DT)
 		this.pos.add(dp)
 
-		this.time += MIN_DT
+		this.time += SIM_DT
 	}
 }
 
-export default Disc
+export default DiscCalculator

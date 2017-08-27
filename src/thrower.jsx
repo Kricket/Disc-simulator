@@ -5,6 +5,6 @@ import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap/dist/js/bootstrap.js'
 import 'thrower.css'
 
-import Root from 'Root'
+import Interface from 'Interface'
 
-render(<Root/>, document.getElementById('root'))
+render(<Interface/>, document.getElementById('root'))

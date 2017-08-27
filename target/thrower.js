@@ -59,7 +59,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "30138cd456b43de4e67d"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "298e018b4b1d94812afa"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
@@ -65532,488 +65532,18 @@ __webpack_require__(90);
 
 __webpack_require__(185);
 
-var _Root = __webpack_require__(88);
+var _Interface = __webpack_require__(192);
 
-var _Root2 = _interopRequireDefault(_Root);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-(0, _reactDom.render)(_react2.default.createElement(_Root2.default, null), document.getElementById('root'));
-
-/***/ }),
-/* 86 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(THREE) {
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var _THREE = THREE,
-    Vector3 = _THREE.Vector3;
-
-// Minimum time step, for accurate simulation
-
-var MIN_DT = 0.0001;
-// Actual length of a time step that we record
-var STEP_DT = 0.01;
-
-// Gravity, in m/s^2
-var GRAVITY = -9.807;
-
-/**
- * Utility class that takes the initial state of a disc, and simulates its movement until
- * it hits the ground.
- */
-
-var Disc = function () {
-	function Disc() {
-		_classCallCheck(this, Disc);
-
-		this.pos = new Vector3();
-		this.vel = new Vector3();
-		this.time = 0;
-	}
-
-	_createClass(Disc, [{
-		key: "run",
-		value: function run() {
-			var steps = [];
-			while (this.pos.y > 0) {
-				this.step();
-				steps.push(this.copyState());
-			}
-
-			return steps;
-		}
-
-		// Get an object with a copy of the current state of the disc
-
-	}, {
-		key: "copyState",
-		value: function copyState() {
-			return {
-				time: this.time,
-				pos: this.pos.clone(),
-				vel: this.vel.clone()
-			};
-		}
-
-		// Step forward one STEP_DT from the current state
-
-	}, {
-		key: "step",
-		value: function step() {
-			var start = this.time;
-			while (this.time - start < STEP_DT && this.pos.y > 0) {
-				this.__minStep();
-			}
-		}
-
-		// Step forward one MIN_DT from the current state
-
-	}, {
-		key: "__minStep",
-		value: function __minStep() {
-			var force = new Vector3(0, GRAVITY, 0);
-
-			force.multiplyScalar(MIN_DT);
-			this.vel.add(force);
-
-			var dp = this.vel.clone().multiplyScalar(MIN_DT);
-			this.pos.add(dp);
-
-			this.time += MIN_DT;
-		}
-	}]);
-
-	return Disc;
-}();
-
-exports.default = Disc;
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(48)))
-
-/***/ }),
-/* 87 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(THREE) {
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _react = __webpack_require__(22);
-
-var _react2 = _interopRequireDefault(_react);
-
-__webpack_require__(186);
+var _Interface2 = _interopRequireDefault(_Interface);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var FIELD_WIDTH = 100,
-    FIELD_LENGTH = 100;
-
-var DISC_POINTS = [new THREE.Vector2(0, 0), new THREE.Vector2(0.15, 0), new THREE.Vector2(0.2, -0.005), new THREE.Vector2(0.23, -0.007), new THREE.Vector2(0.25, -0.01), new THREE.Vector2(0.24, -0.02)];
-
-var makeDisc = function makeDisc() {
-	var geometry = new THREE.LatheGeometry(DISC_POINTS);
-	geometry.faces.forEach(function (face) {
-		return face.materialIndex = Math.floor(Math.random() * 100);
-	});
-	geometry.sortFacesByMaterialIndex();
-
-	var material = new THREE.MeshPhongMaterial({
-		color: 0xEEEEEE,
-		specular: 0x00FF80,
-		shininess: 50,
-		shading: THREE.FlatShading,
-		side: THREE.DoubleSide
-	});
-
-	var disc = new THREE.Mesh(geometry, material);
-	return disc;
-};
-
-var vtxSquare = function vtxSquare(array, offset, x, z) {
-	array[offset] = x;
-	array[offset + 1] = 0;
-	array[offset + 2] = z;
-	array[offset + 3] = x + 1;
-	array[offset + 4] = 0;
-	array[offset + 5] = z;
-	array[offset + 6] = 0;
-	array[offset + 7] = 0;
-	array[offset + 8] = 0;
-	array[offset + 9] = 0;
-	array[offset + 10] = 0;
-	array[offset + 11] = 0;
-};
-
-var makeField = function makeField() {
-	var fieldGeom = new THREE.PlaneBufferGeometry(FIELD_WIDTH, FIELD_LENGTH, FIELD_WIDTH, FIELD_LENGTH);
-	fieldGeom.rotateX(-Math.PI / 2);
-	fieldGeom.translate(50, 0, 50);
-	var colors = new Float32Array(fieldGeom.attributes.position.length);
-	for (var i = 0; i < colors.length; i += 3) {
-		var dark = i % 18 < 9;
-		colors[i] = dark;
-		colors[i + 1] = 1.0;
-		colors[i + 2] = !dark;
-		/*
-  colors[i  ] = i/colors.length
-  colors[i+1] = 1.0 - i/colors.length
-  colors[i+2] = (i%3) / 3
-  */
-	}
-	fieldGeom.addAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-	var material = new THREE.MeshBasicMaterial({
-		vertexColors: THREE.VertexColors,
-		wireframe: true
-	});
-	var field = new THREE.Mesh(fieldGeom, material);
-	/*
- const fieldGeom = new THREE.PlaneGeometry(FIELD_WIDTH, FIELD_LENGTH, FIELD_WIDTH, FIELD_LENGTH)
- fieldGeom.rotateX(Math.PI/2)
- const material = new THREE.LineBasicMaterial({
- 	color: 0x20FF40,
- })
- 	const fieldBufferGeom = new THREE.BufferGeometry().fromGeometry(
- 	new THREE.EdgesGeometry(fieldGeom)
- )
- 	const field = new THREE.Mesh(fieldBufferGeom, material)
- field.translateX(50)
- field.translateZ(50)
- /*
- const field = new THREE.GridHelper(100, 100)
- field.translateX(50)
- field.translateZ(50)
- */
-	return field;
-};
-
-var WIDTH = 1024,
-    HEIGHT = 768;
-var VX = new THREE.Vector3(1, 0, 0);
-var VY = new THREE.Vector3(0, 1, 0);
-var VZ = new THREE.Vector3(0, 0, 1);
-
-var Field = function (_Component) {
-	_inherits(Field, _Component);
-
-	function Field(props) {
-		_classCallCheck(this, Field);
-
-		return _possibleConstructorReturn(this, (Field.__proto__ || Object.getPrototypeOf(Field)).call(this, props));
-	}
-
-	_createClass(Field, [{
-		key: 'render',
-		value: function render() {
-			return _react2.default.createElement('div', { id: 'field',
-				style: { width: WIDTH + "px", height: HEIGHT + "px" }
-			});
-		}
-	}, {
-		key: 'componentWillReceiveProps',
-		value: function componentWillReceiveProps(nextProps) {
-			var initialUp = nextProps.initialUp,
-			    initialPos = nextProps.initialPos;
-
-			if (initialPos) {
-				this.disc.position.fromArray(initialPos);
-			}
-			if (initialUp) {
-				this.disc.quaternion.setFromUnitVectors(VY, new (Function.prototype.bind.apply(THREE.Vector3, [null].concat(_toConsumableArray(initialUp))))());
-			}
-
-			if (nextProps.steps) {
-				this.addStepsToScene(nextProps.steps);
-			}
-		}
-	}, {
-		key: 'componentDidMount',
-		value: function componentDidMount() {
-			var fieldElement = document.getElementById('field');
-
-			var scene = new THREE.Scene();
-			this.scene = scene;
-
-			var camera = new THREE.PerspectiveCamera(75, WIDTH / HEIGHT, 0.1, 1000);
-			var controls = new THREE.OrbitControls(camera, fieldElement);
-			camera.position.set(-1, 2, -1);
-			camera.lookAt(new THREE.Vector3(0, 2, 0));
-			this.camera = camera;
-
-			scene.add(new THREE.AmbientLight(0x404040));
-			scene.add(new THREE.DirectionalLight(0xFFFFFF, 0.5));
-
-			var renderer = new THREE.WebGLRenderer();
-			renderer.setSize(WIDTH, HEIGHT);
-			fieldElement.appendChild(renderer.domElement);
-
-			var disc = makeDisc();
-			this.disc = disc;
-			scene.add(disc);
-
-			var field = makeField();
-			scene.add(field);
-
-			scene.add(new THREE.AxisHelper(1));
-
-			var animate = function animate() {
-				requestAnimationFrame(animate);
-
-				renderer.render(scene, camera);
-			};
-
-			animate();
-		}
-	}, {
-		key: 'addStepsToScene',
-		value: function addStepsToScene(steps) {
-			var geom = new THREE.BufferGeometry();
-			var material = new THREE.LineBasicMaterial({
-				vertexColors: THREE.VertexColors
-				//linewidth: 2
-			});
-
-			var positions = new Float32Array(steps.length * 3);
-			var colors = new Float32Array(steps.length * 3);
-
-			steps.forEach(function (step, i) {
-				positions[i * 3] = step.pos.x;
-				positions[i * 3 + 1] = step.pos.y;
-				positions[i * 3 + 2] = step.pos.z;
-
-				colors[i * 3] = i / steps.length;
-				colors[i * 3 + 1] = 1.0 - i / steps.length;
-				colors[i * 3 + 2] = 1.0;
-			});
-
-			geom.addAttribute('position', new THREE.BufferAttribute(positions, 3));
-			geom.addAttribute('color', new THREE.BufferAttribute(colors, 3));
-			geom.computeBoundingSphere();
-
-			var line = new THREE.Line(geom, material);
-			this.scene.add(line);
-		}
-	}]);
-
-	return Field;
-}(_react.Component);
-
-exports.default = Field;
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(48)))
+(0, _reactDom.render)(_react2.default.createElement(_Interface2.default, null), document.getElementById('root'));
 
 /***/ }),
-/* 88 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _react = __webpack_require__(22);
-
-var _react2 = _interopRequireDefault(_react);
-
-var _Field = __webpack_require__(87);
-
-var _Field2 = _interopRequireDefault(_Field);
-
-var _VectorInput = __webpack_require__(89);
-
-var _VectorInput2 = _interopRequireDefault(_VectorInput);
-
-var _InputGroup = __webpack_require__(49);
-
-var _InputGroup2 = _interopRequireDefault(_InputGroup);
-
-var _Disc = __webpack_require__(86);
-
-var _Disc2 = _interopRequireDefault(_Disc);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var Root = function (_Component) {
-	_inherits(Root, _Component);
-
-	function Root(props) {
-		_classCallCheck(this, Root);
-
-		var _this = _possibleConstructorReturn(this, (Root.__proto__ || Object.getPrototypeOf(Root)).call(this, props));
-
-		_this.state = {};
-		_this.throw = _this.throw.bind(_this);
-		return _this;
-	}
-
-	_createClass(Root, [{
-		key: 'throw',
-		value: function _throw() {
-			var _state = this.state,
-			    _state$pos = _state.pos,
-			    pos = _state$pos === undefined ? [0, 0, 0] : _state$pos,
-			    _state$vel = _state.vel,
-			    vel = _state$vel === undefined ? [0, 0, 0] : _state$vel;
-
-			var disc = new _Disc2.default();
-			disc.pos.fromArray(pos);
-			disc.vel.fromArray(vel);
-
-			var steps = disc.run();
-			this.setState({ steps: steps });
-		}
-	}, {
-		key: 'render',
-		value: function render() {
-			var _this2 = this;
-
-			var _state2 = this.state,
-			    up = _state2.up,
-			    pos = _state2.pos,
-			    steps = _state2.steps;
-
-
-			return _react2.default.createElement(
-				'div',
-				{ className: 'container-fluid', style: {
-						display: 'flex',
-						'flex-direction': 'column',
-						'align-items': 'center'
-					} },
-				_react2.default.createElement(
-					'div',
-					{ className: 'well' },
-					_react2.default.createElement(
-						'h2',
-						null,
-						'Disc simulator'
-					),
-					_react2.default.createElement(_Field2.default, { initialUp: up, initialPos: pos, steps: steps }),
-					_react2.default.createElement(
-						'div',
-						{ className: 'row' },
-						_react2.default.createElement(_VectorInput2.default, { label: 'Orientation', onChange: function onChange(up) {
-								return _this2.setState({ up: up });
-							} }),
-						_react2.default.createElement(
-							'div',
-							{ className: 'btn-group btn-group-vertical vector-group' },
-							_react2.default.createElement(
-								'label',
-								null,
-								'Spin velocity'
-							),
-							_react2.default.createElement(_InputGroup2.default, { label: '\u03A9', onChange: function onChange(e) {
-									return _this2.setState({ omega: e.target.value });
-								} }),
-							_react2.default.createElement(
-								'label',
-								null,
-								'Spin offset (degrees)'
-							),
-							_react2.default.createElement(_InputGroup2.default, { label: '\xB0', onChange: function onChange(e) {
-									return _this2.setState({ spinOff: e.target.value });
-								} })
-						)
-					),
-					_react2.default.createElement(
-						'div',
-						{ className: 'row' },
-						_react2.default.createElement(_VectorInput2.default, { label: 'Position', onChange: function onChange(pos) {
-								return _this2.setState({ pos: pos });
-							} }),
-						_react2.default.createElement(_VectorInput2.default, { label: 'Velocity', onChange: function onChange(vel) {
-								return _this2.setState({ vel: vel });
-							} }),
-						_react2.default.createElement(
-							'button',
-							{ type: 'button', 'class': 'btn btn-success', onClick: this.throw },
-							'Throw!'
-						)
-					)
-				)
-			);
-		}
-	}]);
-
-	return Root;
-}(_react.Component);
-
-exports.default = Root;
-
-/***/ }),
+/* 86 */,
+/* 87 */,
+/* 88 */,
 /* 89 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -81438,6 +80968,531 @@ module.exports = "data:application/font-woff2;base64,d09GMgABAAAAAEZsAA8AAAAAsVw
 
 module.exports = __webpack_require__(85);
 
+
+/***/ }),
+/* 192 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = __webpack_require__(22);
+
+var _react2 = _interopRequireDefault(_react);
+
+var _World = __webpack_require__(195);
+
+var _World2 = _interopRequireDefault(_World);
+
+var _Field = __webpack_require__(196);
+
+var _Field2 = _interopRequireDefault(_Field);
+
+var _Disc = __webpack_require__(193);
+
+var _Disc2 = _interopRequireDefault(_Disc);
+
+var _DiscControls = __webpack_require__(194);
+
+var _DiscControls2 = _interopRequireDefault(_DiscControls);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Interface = function (_Component) {
+	_inherits(Interface, _Component);
+
+	function Interface(props) {
+		_classCallCheck(this, Interface);
+
+		var _this = _possibleConstructorReturn(this, (Interface.__proto__ || Object.getPrototypeOf(Interface)).call(this, props));
+
+		_this.state = {};
+		return _this;
+	}
+
+	_createClass(Interface, [{
+		key: 'render',
+		value: function render() {
+			return _react2.default.createElement(
+				'div',
+				{ className: 'container-fluid' },
+				_react2.default.createElement(
+					'div',
+					{ className: 'well' },
+					_react2.default.createElement(
+						'h2',
+						null,
+						'Disc Simulator'
+					),
+					_react2.default.createElement(
+						'div',
+						{ className: 'row' },
+						_react2.default.createElement('div', { className: 'col-xs-12', id: 'world', style: { height: "800px" } })
+					),
+					_react2.default.createElement(_DiscControls2.default, { disc: this.state.disc })
+				)
+			);
+		}
+	}, {
+		key: 'componentDidMount',
+		value: function componentDidMount() {
+			this.world = new _World2.default(document.getElementById('world'));
+
+			var scene = this.world.scene;
+
+			this.setState({
+				disc: new _Disc2.default(scene),
+				field: new _Field2.default(scene)
+			});
+		}
+	}]);
+
+	return Interface;
+}(_react.Component);
+
+exports.default = Interface;
+
+/***/ }),
+/* 193 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(THREE) {
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _DiscCalculator = __webpack_require__(197);
+
+var _DiscCalculator2 = _interopRequireDefault(_DiscCalculator);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var DISC_POINTS = [new THREE.Vector2(0, 0), new THREE.Vector2(0.15, 0), new THREE.Vector2(0.2, -0.005), new THREE.Vector2(0.23, -0.007), new THREE.Vector2(0.25, -0.01), new THREE.Vector2(0.24, -0.02)];
+
+var VY = new THREE.Vector3(0, 1, 0);
+
+var Disc = function () {
+	function Disc(scene) {
+		_classCallCheck(this, Disc);
+
+		this.scene = scene;
+		this.initPos = new THREE.Vector3();
+		this.initVel = new THREE.Vector3();
+		this.createDiscMesh();
+	}
+
+	_createClass(Disc, [{
+		key: 'setInitialUp',
+		value: function setInitialUp(upArr) {
+			this.initUp = new (Function.prototype.bind.apply(THREE.Vector3, [null].concat(_toConsumableArray(upArr))))();
+			this.discMesh.quaternion.setFromUnitVectors(VY, this.initUp);
+		}
+	}, {
+		key: 'setInitialPos',
+		value: function setInitialPos(posArr) {
+			this.initPos = new (Function.prototype.bind.apply(THREE.Vector3, [null].concat(_toConsumableArray(posArr))))();
+			this.discMesh.position.fromArray(posArr);
+		}
+	}, {
+		key: 'setInitialVel',
+		value: function setInitialVel(velArr) {
+			this.initVel = new (Function.prototype.bind.apply(THREE.Vector3, [null].concat(_toConsumableArray(velArr))))();
+		}
+	}, {
+		key: 'throw',
+		value: function _throw() {
+			var calc = new _DiscCalculator2.default(this.initPos, this.initVel);
+			this.steps = calc.run();
+			this.createStepsMesh();
+		}
+	}, {
+		key: 'createDiscMesh',
+		value: function createDiscMesh() {
+			var geometry = new THREE.LatheGeometry(DISC_POINTS);
+			geometry.faces.forEach(function (face) {
+				return face.materialIndex = Math.floor(Math.random() * 100);
+			});
+			geometry.sortFacesByMaterialIndex();
+
+			var material = new THREE.MeshPhongMaterial({
+				color: 0xEEEEEE,
+				specular: 0x00FF80,
+				shininess: 50,
+				shading: THREE.FlatShading,
+				side: THREE.DoubleSide
+			});
+
+			this.discMesh = new THREE.Mesh(geometry, material);
+			this.scene.add(this.discMesh);
+		}
+	}, {
+		key: 'removeStepsMesh',
+		value: function removeStepsMesh() {
+			if (this.stepsMesh) {
+				this.scene.remove(this.stepsMesh);
+			}
+		}
+	}, {
+		key: 'createStepsMesh',
+		value: function createStepsMesh() {
+			this.removeStepsMesh();
+			var steps = this.steps;
+
+
+			var geom = new THREE.BufferGeometry();
+			var material = new THREE.LineBasicMaterial({
+				vertexColors: THREE.VertexColors
+				//linewidth: 2
+			});
+
+			var positions = new Float32Array(steps.length * 3);
+			var colors = new Float32Array(steps.length * 3);
+
+			steps.forEach(function (step, i) {
+				positions[i * 3] = step.pos.x;
+				positions[i * 3 + 1] = step.pos.y;
+				positions[i * 3 + 2] = step.pos.z;
+
+				colors[i * 3] = i / steps.length;
+				colors[i * 3 + 1] = 1.0 - i / steps.length;
+				colors[i * 3 + 2] = 1.0;
+			});
+
+			geom.addAttribute('position', new THREE.BufferAttribute(positions, 3));
+			geom.addAttribute('color', new THREE.BufferAttribute(colors, 3));
+			geom.computeBoundingSphere();
+
+			this.stepsMesh = new THREE.Line(geom, material);
+			this.scene.add(this.stepsMesh);
+		}
+	}]);
+
+	return Disc;
+}();
+
+exports.default = Disc;
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(48)))
+
+/***/ }),
+/* 194 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _react = __webpack_require__(22);
+
+var _react2 = _interopRequireDefault(_react);
+
+var _VectorInput = __webpack_require__(89);
+
+var _VectorInput2 = _interopRequireDefault(_VectorInput);
+
+var _InputGroup = __webpack_require__(49);
+
+var _InputGroup2 = _interopRequireDefault(_InputGroup);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var DiscControls = function DiscControls(_ref) {
+	var disc = _ref.disc;
+	return _react2.default.createElement(
+		'div',
+		{ className: 'well' },
+		_react2.default.createElement(
+			'div',
+			{ className: 'row' },
+			_react2.default.createElement(_VectorInput2.default, { label: 'Orientation', onChange: function onChange(up) {
+					return disc.setInitialUp(up);
+				} }),
+			_react2.default.createElement(
+				'div',
+				{ className: 'btn-group btn-group-vertical vector-group' },
+				_react2.default.createElement(
+					'label',
+					null,
+					'Spin velocity'
+				),
+				_react2.default.createElement(_InputGroup2.default, { label: '\u03A9', onChange: function onChange(e) {
+						return disc.setInitialOmega(e.target.value);
+					} }),
+				_react2.default.createElement(
+					'label',
+					null,
+					'Spin offset (degrees)'
+				),
+				_react2.default.createElement(_InputGroup2.default, { label: '\xB0', onChange: function onChange(e) {
+						return disc.setInitialSpinOff(e.target.value);
+					} })
+			)
+		),
+		_react2.default.createElement(
+			'div',
+			{ className: 'row' },
+			_react2.default.createElement(_VectorInput2.default, { label: 'Position', onChange: function onChange(pos) {
+					return disc.setInitialPos(pos);
+				} }),
+			_react2.default.createElement(_VectorInput2.default, { label: 'Velocity', onChange: function onChange(vel) {
+					return disc.setInitialVel(vel);
+				} }),
+			_react2.default.createElement(
+				'button',
+				{ type: 'button', 'class': 'btn btn-success', onClick: function onClick() {
+						return disc.throw();
+					} },
+				'Throw!'
+			)
+		)
+	);
+};
+
+exports.default = DiscControls;
+
+/***/ }),
+/* 195 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(THREE) {
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+__webpack_require__(186);
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var World = function () {
+	function World(worldElement) {
+		_classCallCheck(this, World);
+
+		this.init(worldElement);
+	}
+
+	_createClass(World, [{
+		key: 'init',
+		value: function init(worldElement) {
+			this.scene = new THREE.Scene();
+
+			this.camera = new THREE.PerspectiveCamera(75, worldElement.offsetWidth / worldElement.offsetHeight, 0.1, 1000);
+			this.camera.lookAt(new THREE.Vector3(0, 2, 0));
+			this.camera.position.set(-1, 2, -1);
+			var controls = new THREE.OrbitControls(this.camera, worldElement);
+
+			this.scene.add(new THREE.AmbientLight(0x404040));
+			this.scene.add(new THREE.DirectionalLight(0xFFFFFF, 0.5));
+
+			this.renderer = new THREE.WebGLRenderer();
+			this.renderer.setSize(worldElement.offsetWidth, worldElement.offsetHeight);
+			worldElement.appendChild(this.renderer.domElement);
+
+			this.scene.add(new THREE.AxisHelper(1));
+			this.startAnimation();
+		}
+	}, {
+		key: 'startAnimation',
+		value: function startAnimation() {
+			var self = this;
+			var animate = function animate(time) {
+				requestAnimationFrame(animate);
+				self.renderer.render(self.scene, self.camera);
+			};
+
+			requestAnimationFrame(animate);
+		}
+	}]);
+
+	return World;
+}();
+
+exports.default = World;
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(48)))
+
+/***/ }),
+/* 196 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(THREE) {
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var FIELD_WIDTH = 100,
+    FIELD_LENGTH = 100;
+
+var Field = function () {
+	function Field(scene) {
+		_classCallCheck(this, Field);
+
+		this.createMesh();
+		scene.add(this.fieldMesh);
+	}
+
+	_createClass(Field, [{
+		key: 'createMesh',
+		value: function createMesh() {
+			var fieldGeom = new THREE.PlaneBufferGeometry(FIELD_WIDTH, FIELD_LENGTH, FIELD_WIDTH, FIELD_LENGTH);
+			fieldGeom.rotateX(-Math.PI / 2);
+			fieldGeom.translate(50, 0, 50);
+
+			var colors = new Float32Array(fieldGeom.attributes.position.length);
+			for (var i = 0; i < colors.length; i += 3) {
+				var dark = i % 18 < 9;
+				colors[i] = dark * 0.2;
+				colors[i + 1] = 0.5;
+				colors[i + 2] = !dark * 0.2;
+				/*
+    colors[i  ] = i/colors.length
+    colors[i+1] = 1.0 - i/colors.length
+    colors[i+2] = (i%3) / 3
+    */
+			}
+			fieldGeom.addAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+			var material = new THREE.MeshBasicMaterial({
+				vertexColors: THREE.VertexColors,
+				wireframe: true
+			});
+			this.fieldMesh = new THREE.Mesh(fieldGeom, material);
+		}
+	}]);
+
+	return Field;
+}();
+
+exports.default = Field;
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(48)))
+
+/***/ }),
+/* 197 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(THREE) {
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var _THREE = THREE,
+    Vector3 = _THREE.Vector3;
+
+// Time step, for accurate simulation
+
+var SIM_DT = 0.0001;
+// Actual length of a time step that we record
+var STEP_DT = 0.01;
+
+// Gravity, in m/s^2
+var GRAVITY = -9.807;
+
+/**
+ * Takes initial conditions, and calculates the path of the disc until it hits the ground.
+ */
+
+var DiscCalculator = function () {
+	function DiscCalculator(pos, vel) {
+		_classCallCheck(this, DiscCalculator);
+
+		this.pos = pos.clone();
+		this.vel = vel.clone();
+		this.time = 0;
+	}
+
+	_createClass(DiscCalculator, [{
+		key: "run",
+		value: function run() {
+			this.steps = [];
+			while (this.pos.y > 0) {
+				this.step();
+				this.steps.push(this.copyState());
+			}
+
+			return this.steps;
+		}
+
+		// Get an object with a copy of the current state of the disc
+
+	}, {
+		key: "copyState",
+		value: function copyState() {
+			return {
+				time: this.time,
+				pos: this.pos.clone(),
+				vel: this.vel.clone()
+			};
+		}
+
+		// Step forward one STEP_DT from the current state
+
+	}, {
+		key: "step",
+		value: function step() {
+			var start = this.time;
+			while (this.time - start < STEP_DT && this.pos.y > 0) {
+				this.__minStep();
+			}
+		}
+
+		// Step forward one SIM_DT from the current state
+
+	}, {
+		key: "__minStep",
+		value: function __minStep() {
+			var force = new Vector3(0, GRAVITY, 0);
+
+			force.multiplyScalar(SIM_DT);
+			this.vel.add(force);
+
+			var dp = this.vel.clone().multiplyScalar(SIM_DT);
+			this.pos.add(dp);
+
+			this.time += SIM_DT;
+		}
+	}]);
+
+	return DiscCalculator;
+}();
+
+exports.default = DiscCalculator;
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(48)))
 
 /***/ })
 /******/ ]);
