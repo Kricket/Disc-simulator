@@ -17,27 +17,42 @@ class Disc {
 		this.scene = scene
 		this.initPos = new THREE.Vector3()
 		this.initVel = new THREE.Vector3()
+		this.initUp = VY.clone()
 		this.createDiscMesh()
 	}
 
 	setInitialUp(upArr) {
 		this.initUp = new THREE.Vector3(...upArr)
-		this.discMesh.quaternion.setFromUnitVectors(VY, this.initUp)
+		this.gotoInitialState()
 	}
 
 	setInitialPos(posArr) {
 		this.initPos = new THREE.Vector3(...posArr)
-		this.discMesh.position.fromArray(posArr)
+		this.gotoInitialState()
+	}
+
+	setPos(pos) {
+		this.discMesh.position.copy(pos)
 	}
 
 	setInitialVel(velArr) {
 		this.initVel = new THREE.Vector3(...velArr)
 	}
 
+	gotoInitialState() {
+		this.discMesh.quaternion.setFromUnitVectors(VY, this.initUp)
+		this.discMesh.position.copy(this.initPos)
+	}
+
 	throw() {
+		this.gotoInitialState()
 		const calc = new DiscCalculator(this.initPos, this.initVel)
 		this.steps = calc.run()
-		this.createStepsMesh()
+		return this.steps
+	}
+
+	getSteps() {
+		return this.steps
 	}
 
 	createDiscMesh() {
@@ -57,14 +72,14 @@ class Disc {
 		this.scene.add(this.discMesh)
 	}
 
-	removeStepsMesh() {
+	hideTrajectory() {
 		if(this.stepsMesh) {
 			this.scene.remove(this.stepsMesh)
 		}
 	}
 
-	createStepsMesh() {
-		this.removeStepsMesh()
+	showTrajectory() {
+		this.hideTrajectory()
 		const {steps} = this
 
 		const geom = new THREE.BufferGeometry()

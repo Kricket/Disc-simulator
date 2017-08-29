@@ -2,3 +2,11 @@
 	padding: 2px;
 	margin: 2px;
 }
+
+.nodisplay {
+	display: none;
+}
+
+.padded {
+	padding: 5px;
+}
