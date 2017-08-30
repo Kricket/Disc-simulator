@@ -31,12 +31,12 @@ class Disc {
 		this.gotoInitialState()
 	}
 
-	setPos(pos) {
-		this.discMesh.position.copy(pos)
-	}
-
 	setInitialVel(velArr) {
 		this.initVel = new THREE.Vector3(...velArr)
+	}
+
+	gotoState(state) {
+		this.discMesh.position.copy(state.pos)
 	}
 
 	gotoInitialState() {
