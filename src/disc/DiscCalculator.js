@@ -1,3 +1,5 @@
+import {UP, POS, VEL} from 'disc/DiscState'
+
 const {Vector3} = THREE
 
 // Time step, for accurate simulation
@@ -13,9 +15,9 @@ const GRAVITY = -9.807
  * Takes initial conditions, and calculates the path of the disc until it hits the ground.
  */
 class DiscCalculator {
-	constructor(pos, vel) {
-		this.pos = pos.clone()
-		this.vel = vel.clone()
+	constructor(initState) {
+		this.pos = initState[POS].clone()
+		this.vel = initState[VEL].clone()
 		this.time = 0
 	}
 

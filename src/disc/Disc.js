@@ -1,4 +1,5 @@
 import DiscCalculator from 'disc/DiscCalculator'
+import {UP, POS, VEL, defaultState} from 'disc/DiscState'
 
 const DISC_POINTS = [
 	new THREE.Vector2(0, 0),
@@ -15,39 +16,48 @@ const VY = new THREE.Vector3(0,1,0)
 class Disc {
 	constructor(scene) {
 		this.scene = scene
-		this.initPos = new THREE.Vector3()
-		this.initVel = new THREE.Vector3()
-		this.initUp = VY.clone()
+
+		this.initialState = defaultState()
 		this.createDiscMesh()
 	}
 
-	setInitialUp(upArr) {
-		this.initUp = new THREE.Vector3(...upArr)
+	setInitial(comp, value) {
+		this.initialState[comp] = value
 		this.gotoInitialState()
 	}
 
-	setInitialPos(posArr) {
-		this.initPos = new THREE.Vector3(...posArr)
-		this.gotoInitialState()
-	}
-
-	setInitialVel(velArr) {
-		this.initVel = new THREE.Vector3(...velArr)
+	setShowTrajectory(show) {
+		this.showTrajectory = !!show
+		if(this.steps) {
+			if(this.showTrajectory) {
+				this.createTrajectory()
+			} else {
+				this.hideTrajectory()
+			}
+		}
 	}
 
 	gotoState(state) {
-		this.discMesh.position.copy(state.pos)
+		this.discMesh.position.copy(state[POS])
+		this.discMesh.quaternion.setFromUnitVectors(VY, state[UP])
 	}
 
 	gotoInitialState() {
-		this.discMesh.quaternion.setFromUnitVectors(VY, this.initUp)
-		this.discMesh.position.copy(this.initPos)
+		this.gotoState(this.initialState)
+		this.steps = null
 	}
 
 	throw() {
 		this.gotoInitialState()
-		const calc = new DiscCalculator(this.initPos, this.initVel)
+		const calc = new DiscCalculator(this.initialState)
 		this.steps = calc.run()
+
+		if(this.showTrajectory) {
+			this.createTrajectory()
+		} else {
+			this.hideTrajectory()
+		}
+
 		return this.steps
 	}
 
@@ -78,7 +88,7 @@ class Disc {
 		}
 	}
 
-	showTrajectory() {
+	createTrajectory() {
 		this.hideTrajectory()
 		const {steps} = this
 
@@ -96,9 +106,10 @@ class Disc {
 			positions[i*3+1] = step.pos.y
 			positions[i*3+2] = step.pos.z
 
-			colors[i*3  ] = (i/steps.length)
-			colors[i*3+1] = 1.0 - (i/steps.length)
-			colors[i*3+2] = 1.0
+			const vel = step.vel.length()
+			colors[i*3  ] = vel / 10.0
+			colors[i*3+1] = 1.0 - vel / 10.0
+			colors[i*3+2] = Math.abs(10.0 - vel) / vel
 		})
 
 		geom.addAttribute('position', new THREE.BufferAttribute(positions, 3))

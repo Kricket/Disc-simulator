@@ -21,7 +21,7 @@ class World {
 		this.renderer.setSize(worldElement.offsetWidth, worldElement.offsetHeight)
 		worldElement.appendChild(this.renderer.domElement)
 
-		this.scene.add(new THREE.AxisHelper(1))
+		//this.scene.add(new THREE.AxisHelper(1))
 		this.startAnimation()
 	}
 
