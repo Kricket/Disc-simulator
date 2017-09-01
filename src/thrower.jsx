@@ -9,4 +9,6 @@ import 'thrower.css'
 
 import Interface from 'Interface'
 
+$('body').append('<div id="root"></div>')
+
 render(<Interface/>, document.getElementById('root'))

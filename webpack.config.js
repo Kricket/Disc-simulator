@@ -1,5 +1,6 @@
 var webpack = require('webpack');
 var path = require('path');
+var HtmlWebpackPlugin = require('html-webpack-plugin');
 
 var BUILD_DIR = path.resolve(__dirname, 'target/');
 var APP_DIR = path.resolve(__dirname, 'src/');
@@ -34,6 +35,10 @@ function getPlugins() {
 			comments: false
 		}));
 	}
+
+	plugins.push(new HtmlWebpackPlugin({
+		title: "Disc Throw Simulator"
+	}));
 
 	return plugins;
 }
