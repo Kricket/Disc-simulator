@@ -1,8 +1,9 @@
-import DiscCalculator from 'disc/DiscCalculator'
-import {UP, POS, VEL, defaultState} from 'disc/DiscState'
+import DiscCalculator, {DISC_CONTOUR} from 'disc/DiscCalculator'
+import DiscState, {UP, POS, VEL} from 'disc/DiscState'
 
 const DISC_POINTS = [
 	new THREE.Vector2(0, 0),
+
 	new THREE.Vector2(0.15, 0),
 	new THREE.Vector2(0.2, -0.005),
 	new THREE.Vector2(0.23, -0.007),
@@ -17,12 +18,12 @@ class Disc {
 	constructor(scene) {
 		this.scene = scene
 
-		this.initialState = defaultState()
+		this.initialState = new DiscState()
 		this.createDiscMesh()
 	}
 
-	setInitial(comp, value) {
-		this.initialState[comp] = value
+	setInitial(key, value) {
+		this.initialState[key] = value
 		this.gotoInitialState()
 	}
 
@@ -47,26 +48,32 @@ class Disc {
 		this.steps = null
 	}
 
-	throw() {
+	throw(update, done) {
 		this.gotoInitialState()
+		const self = this
 		const calc = new DiscCalculator(this.initialState)
-		this.steps = calc.run()
-
-		if(this.showTrajectory) {
-			this.createTrajectory()
-		} else {
-			this.hideTrajectory()
-		}
-
-		return this.steps
+		calc.calculate(update, steps => {
+			self.steps = steps
+			self.showOrHideExtras()
+			done(steps)
+		})
 	}
 
 	getSteps() {
 		return this.steps
 	}
 
+	// Show/hide optional stuff
+	showOrHideExtras() {
+		if(this.showTrajectory) {
+			this.createTrajectory()
+		} else {
+			this.hideTrajectory()
+		}
+	}
+
 	createDiscMesh() {
-		const geometry = new THREE.LatheGeometry(DISC_POINTS)
+		const geometry = new THREE.LatheGeometry(DISC_CONTOUR, 72)
 		geometry.faces.forEach(face => face.materialIndex = Math.floor(Math.random() * 100))
 		geometry.sortFacesByMaterialIndex()
 

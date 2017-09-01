@@ -127,20 +127,19 @@ class Interface extends Component {
 	// Calculate the throw, and setup the "video player" with the result
 	onThrow() {
 		this.stop()
+		const self = this
 
-		const steps = this.disc.throw()
+		this.disc.throw(calcTime => {
+			self.setState({calcTime})
+		}, steps => {
+			const lastStep = steps[steps.length-1]
+			const slider = $('#timeSlider')
+			slider.slider('off', 'slide', self.ticker.onSlide)
 
-		const lastStep = steps[steps.length-1]
-		const slider = $('#timeSlider')
-		slider.slider('off', 'slide', this.ticker.onSlide)
-
-		if(lastStep) {
-			this.setState({maxTime: lastStep.time})
+			self.setState({maxTime: lastStep.time, calcTime: 0})
 			slider.slider('setAttribute', 'max', lastStep.time)
-				.slider('on', 'slide', this.ticker.onSlide)
-			} else {
-				this.setState({maxTime: 0})
-			}
+				.slider('on', 'slide', self.ticker.onSlide)
+		})
 	}
 
 	onChangeDiscInit(comp, val) {
@@ -154,10 +153,15 @@ class Interface extends Component {
 	}
 
 	render() {
-		const {playing, maxTime} = this.state
+		const {playing, maxTime, calcTime} = this.state
 
 		return (
 			<div className="container-fluid">
+				{!!calcTime && <div className="loading-overlay">
+					<h3 className="loading-text">
+						Calculating... {Math.floor(calcTime / 100) / 10}
+					</h3>
+				</div>}
 				<div className="well">
 					<div className="row">
 						<div className="col-xs-12" id="world" style={{height: "700px"}}/>
