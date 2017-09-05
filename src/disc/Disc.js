@@ -1,9 +1,13 @@
 import DiscCalculator, {DISC_CONTOUR} from 'disc/DiscCalculator'
-import DiscState, {UP, POS, VEL, LIFT, DRAG} from 'disc/DiscState'
+import DiscState, {UP, POS, VEL, LIFT, DRAG, D1, D2, D3} from 'disc/DiscState'
+
+// Draw the path of the disc
+export const PATH = 'path'
+
+
 
 const DISC_POINTS = [
 	new THREE.Vector2(0, 0),
-
 	new THREE.Vector2(0.15, 0),
 	new THREE.Vector2(0.2, -0.005),
 	new THREE.Vector2(0.23, -0.007),
@@ -11,13 +15,16 @@ const DISC_POINTS = [
 	new THREE.Vector2(0.24, -0.02)
 ]
 
-
 const VY = new THREE.Vector3(0,1,0)
-
-export const SHOW_PATH = 'path',
-	SHOW_LIFT = LIFT,
-	SHOW_DRAG = DRAG
-
+const DRAWABLE_VECTORS = [VEL, LIFT, DRAG, D1, D2, D3]
+const DRAWABLE_VECTOR_COLORS = {
+	[LIFT]: 0x00AA50,
+	[DRAG]: 0xAA0050,
+	[VEL]: 0x808080,
+	[D1]: 0xFF0000,
+	[D2]: 0x00FF00,
+	[D3]: 0x0000FF,
+}
 
 const lineFloatArray = (a,b) => {
 	const positions = a.toArray()
@@ -49,6 +56,7 @@ class Disc {
 		this.scene = scene
 
 		this.initialState = new DiscState()
+		this.currentState = this.initialState
 		this.createDiscMesh()
 	}
 
@@ -65,11 +73,11 @@ class Disc {
 	}
 
 	gotoState(state) {
+		this.currentState = state
 		this.discMesh.position.copy(state[POS])
 		this.discMesh.quaternion.setFromUnitVectors(VY, state[UP])
 
-		this.drawVector(state, LIFT, 0x00FF00)
-		this.drawVector(state, DRAG, 0xFF0000)
+		DRAWABLE_VECTORS.forEach(v => this.moveVector(v))
 	}
 
 	gotoInitialState() {
@@ -94,11 +102,13 @@ class Disc {
 
 	// Show/hide optional stuff
 	showOrHideExtras() {
-		if(this.show[SHOW_PATH]) {
+		if(this.show[PATH]) {
 			this.createPath()
 		} else {
 			this.hidePath()
 		}
+
+		DRAWABLE_VECTORS.forEach(v => this.createOrHideVector(v))
 	}
 
 	createDiscMesh() {
@@ -156,19 +166,28 @@ class Disc {
 		this.scene.add(this.stepsMesh)
 	}
 
-	drawVector(state, type, color) {
-		if(!this.show[type] || !state[type] || !state[POS]) {
+	createOrHideVector(type) {
+		if(!this.show[type]) {
 			if(this['vector' + type]) {
 				this.scene.remove(this['vector' + type])
+				this['vector' + type] = null
 			}
 			return
 		} else {
 			if(!this['vector' + type]) {
-				this['vector' + type] = createLine(state[POS], state[POS].clone().add(state[type]), color)
+				this['vector' + type] = createLine(
+					this.currentState[POS],
+					this.currentState[POS].clone().add(this.currentState[type]),
+					DRAWABLE_VECTOR_COLORS[type])
 				this.scene.add(this['vector' + type])
-			} else {
-				moveLine(this['vector' + type], state[POS], state[POS].clone().add(state[type]))
 			}
+		}
+	}
+
+	moveVector(type) {
+		const state = this.currentState
+		if(this['vector' + type] && state[type] && state[POS]) {
+			moveLine(this['vector' + type], state[POS], state[POS].clone().add(state[type]))
 		}
 	}
 }

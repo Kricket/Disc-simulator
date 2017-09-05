@@ -1,4 +1,4 @@
-import {UP, POS, VEL, LIFT, DRAG, TIME} from 'disc/DiscState'
+import {UP, POS, VEL, LIFT, DRAG, D1, D2, D3, TIME} from 'disc/DiscState'
 
 const {Vector3, Plane} = THREE
 
@@ -134,12 +134,12 @@ class DiscCalculator {
 		// To calculate lift, start by figuring out its direction. It's perpendicular to vel.
 		// We can get this by rotating d3 by alpha
 		const fLift = d3.clone().multiplyScalar(Math.cos(alpha)).add(
-			d1.clone().multiplyScalar(Math.sin(alpha))
+			d1.clone().multiplyScalar(-Math.sin(alpha))
 		)
 
 		// Now, just get the magnitude of lift
 		fLift.multiplyScalar(
-			CL * AIR_DENSITY * planf_area * vsq * (-0.5)
+			CL * AIR_DENSITY * planf_area * vsq * (0.5)
 		)
 
 		force.add(fLift)
@@ -148,6 +148,10 @@ class DiscCalculator {
 		//===================
 		// Save and Integrate
 		//===================
+
+		this.state[D1] = d1
+		this.state[D2] = d2
+		this.state[D3] = d3
 
 		this.state[LIFT] = fLift
 		this.state[DRAG] = fDrag

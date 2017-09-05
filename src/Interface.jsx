@@ -170,7 +170,7 @@ class Interface extends Component {
 	}
 
 	render() {
-		const {playing, maxTime, calcTime, discState} = this.state
+		const {playing, maxTime, calcTime, discState, worldExists} = this.state
 
 		return (
 			<div className="container-fluid">
@@ -201,7 +201,7 @@ class Interface extends Component {
 								data-slider-value="0"/>
 						</span>
 					</div>
-					<DiscControls onChange={this.onChangeDiscInit} onShow={this.onShowDiscExtra} onThrow={this.onThrow}/>
+					{!!worldExists && <DiscControls disc={this.disc} onThrow={this.onThrow}/>}
 					<Vector label="lift" vec={discState ? discState.lift : null}/>
 				</div>
 			</div>
@@ -214,6 +214,8 @@ class Interface extends Component {
 		this.disc = new Disc(scene)
 		this.field = new Field(scene)
 		this.ticker = new Ticker(this.world, this.disc, $('#timeSlider'), this.onDone, this.onTick)
+
+		this.setState({worldExists: true})
 	}
 }
 
