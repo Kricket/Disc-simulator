@@ -8,11 +8,12 @@ import {UP, POS, VEL} from 'disc/DiscState'
 
 // Helper used to create video-like controls for the movement of the disc
 class Ticker {
-	constructor(world, disc, slider, onDone) {
+	constructor(world, disc, slider, onDone, onTick) {
 		this.world = world
 		this.disc = disc
 		this.slider = slider
 		this.onDone = onDone
+		this.onTick = onTick
 
 		this.__tick = this.__tick.bind(this)
 		this.onSlide = this.onSlide.bind(this)
@@ -42,6 +43,10 @@ class Ticker {
 
 		if(this.stepIdx === steps.length) {
 			this.stop()
+		}
+
+		if(this.onTick) {
+			this.onTick(step)
 		}
 	}
 
@@ -89,6 +94,14 @@ class Ticker {
 }
 
 
+const Vector = ({vec, label}) => vec ? <div>
+	<strong>{label}</strong>
+	<i>X: </i>{vec.x.toPrecision(3)}
+	<i>Y: </i>{vec.y.toPrecision(3)}
+	<i>Z: </i>{vec.z.toPrecision(3)}
+</div> : <div/>
+
+
 class Interface extends Component {
 	constructor(props) {
 		super(props)
@@ -97,7 +110,9 @@ class Interface extends Component {
 		this.onDone = this.onDone.bind(this)
 		this.onPause = this.onPause.bind(this)
 		this.onThrow = this.onThrow.bind(this)
+		this.onTick = this.onTick.bind(this)
 		this.onChangeDiscInit = this.onChangeDiscInit.bind(this)
+		this.onShowDiscExtra = this.onShowDiscExtra.bind(this)
 	}
 
 	// Callback for the "play" button
@@ -143,23 +158,25 @@ class Interface extends Component {
 	}
 
 	onChangeDiscInit(comp, val) {
-		switch(comp) {
-			case 'showTrajectory':
-				this.disc.setShowTrajectory(val)
-				break
-			default:
-				this.disc.setInitial(comp, new THREE.Vector3(...val))
-		}
+		this.disc.setInitial(comp, new THREE.Vector3(...val))
+	}
+
+	onShowDiscExtra(key, val) {
+		this.disc.setShow(key, val)
+	}
+
+	onTick(discState) {
+		this.setState({discState})
 	}
 
 	render() {
-		const {playing, maxTime, calcTime} = this.state
+		const {playing, maxTime, calcTime, discState} = this.state
 
 		return (
 			<div className="container-fluid">
 				{!!calcTime && <div className="loading-overlay">
 					<h3 className="loading-text">
-						Calculating... {Math.floor(calcTime / 100) / 10}
+						Calculating... {Math.floor(calcTime * 10) / 10}
 					</h3>
 				</div>}
 				<div className="well">
@@ -184,7 +201,8 @@ class Interface extends Component {
 								data-slider-value="0"/>
 						</span>
 					</div>
-					<DiscControls onChange={this.onChangeDiscInit} onThrow={this.onThrow}/>
+					<DiscControls onChange={this.onChangeDiscInit} onShow={this.onShowDiscExtra} onThrow={this.onThrow}/>
+					<Vector label="lift" vec={discState ? discState.lift : null}/>
 				</div>
 			</div>
 		)
@@ -195,7 +213,7 @@ class Interface extends Component {
 		const {scene} = this.world
 		this.disc = new Disc(scene)
 		this.field = new Field(scene)
-		this.ticker = new Ticker(this.world, this.disc, $('#timeSlider'), this.onDone)
+		this.ticker = new Ticker(this.world, this.disc, $('#timeSlider'), this.onDone, this.onTick)
 	}
 }
 

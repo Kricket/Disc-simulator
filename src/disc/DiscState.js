@@ -6,6 +6,8 @@ export const
 	POS = 'pos',
 	// Linear velocity of the disc
 	VEL = 'vel',
+	LIFT = 'lift',
+	DRAG = 'drag',
 	// Number of seconds elapsed since the start of the throw
 	TIME = 'time';
 
@@ -19,10 +21,9 @@ class DiscState {
 
 	clone() {
 		const s = new DiscState()
-		s[UP] = this[UP].clone()
-		s[POS] = this[POS].clone()
-		s[VEL] = this[VEL].clone()
-		s[TIME] = this[TIME]
+		Object.keys(this).forEach(k => {
+			s[k] = this[k].clone ? this[k].clone() : this[k]
+		}, this)
 		return s
 	}
 }

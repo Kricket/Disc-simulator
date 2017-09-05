@@ -1,9 +1,9 @@
-import {UP, POS, VEL} from 'disc/DiscState'
+import {UP, POS, VEL, LIFT, DRAG, TIME} from 'disc/DiscState'
 
 const {Vector3, Plane} = THREE
 
 // Time step, for accurate simulation
-const SIM_DT = 0.0001
+const SIM_DT = 0.00001
 // Actual length of a time step that we record
 const STEP_DT = 0.01
 
@@ -73,7 +73,7 @@ class DiscCalculator {
 		const self = this
 
 		const calculate = t => {
-			update(t)
+			update(self.state.time)
 			self.step()
 			self.steps.push(self.state.clone())
 			if(self.state.pos.y > 0) {
@@ -106,14 +106,14 @@ class DiscCalculator {
 
 		// Axes of the disc frame. d3 is the disc normal, d1 points in the dir of attack
 		const d3 = this.state[UP]
-		const d1 = getForwardVector(d3, this.state.vel)
+		const d1 = getForwardVector(d3, this.state[VEL])
 		const d2 = d3.clone().cross(d1)
 
-		const vsq = this.state.vel.dot(this.state.vel)
-		const nVel = this.state.vel.clone().normalize()
+		const vsq = this.state[VEL].dot(this.state[VEL])
+		const nVel = this.state[VEL].clone().normalize()
 		
 		// alpha = the angle of attack. Positive alpha 
-		const alpha = isZero(vsq) ? 0 : Math.PI/2 - d3.angleTo(this.state.vel)
+		const alpha = isZero(vsq) ? 0 : Math.PI/2 - d3.angleTo(this.state[VEL])
 
 		// Estimate the surface area of the disc facing forward
 		const planf_area = FR_AREA * Math.abs(Math.sin(alpha)) + // Flat surface of the disc
@@ -134,7 +134,8 @@ class DiscCalculator {
 		// To calculate lift, start by figuring out its direction. It's perpendicular to vel.
 		// We can get this by rotating d3 by alpha
 		const fLift = d3.clone().multiplyScalar(Math.cos(alpha)).add(
-			d1.clone().multiplyScalar(Math.sin(alpha)))
+			d1.clone().multiplyScalar(Math.sin(alpha))
+		)
 
 		// Now, just get the magnitude of lift
 		fLift.multiplyScalar(
@@ -148,17 +149,17 @@ class DiscCalculator {
 		// Save and Integrate
 		//===================
 
-		this.state.lift = fLift
-		this.state.drag = fDrag
+		this.state[LIFT] = fLift
+		this.state[DRAG] = fDrag
 		this.state.force = force.clone()
 
 		force.multiplyScalar(SIM_DT)
-		this.state.vel.add(force)
+		this.state[VEL].add(force)
 
-		const dp = this.state.vel.clone().multiplyScalar(SIM_DT)
-		this.state.pos.add(dp)
+		const dp = this.state[VEL].clone().multiplyScalar(SIM_DT)
+		this.state[POS].add(dp)
 
-		this.state.time += SIM_DT
+		this.state[TIME] += SIM_DT
 	}
 }
 

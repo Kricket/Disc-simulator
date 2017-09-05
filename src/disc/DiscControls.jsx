@@ -4,10 +4,11 @@ import VectorInput from 'VectorInput'
 import InputGroup from 'InputGroup'
 
 import {UP, POS, VEL} from 'disc/DiscState'
+import {SHOW_PATH, SHOW_LIFT, SHOW_DRAG} from 'disc/Disc'
 
 class DiscControls extends Component {
 	render() {
-		const {onChange, onThrow} = this.props
+		const {onChange, onShow, onThrow} = this.props
 		return <div>
 			<VectorInput label="Orientation" onChange={up => onChange(UP, up)}/>
 			<div className="btn-group btn-group-vertical vector-group">
@@ -19,7 +20,9 @@ class DiscControls extends Component {
 			<VectorInput label="Position" onChange={pos => onChange(POS, pos)}/>
 			<VectorInput label="Velocity" onChange={vel => onChange(VEL, vel)}/>
 			<div className="btn-group btn-group-vertical vector-group">
-				<InputGroup label="Show path" type="checkbox" onChange={e => onChange('showTrajectory', e.target.checked)}/>
+				<InputGroup label="Path" type="checkbox" onChange={e => onShow(SHOW_PATH, e.target.checked)}/>
+				<InputGroup label="Lift" type="checkbox" onChange={e => onShow(SHOW_LIFT, e.target.checked)}/>
+				<InputGroup label="Drag" type="checkbox" onChange={e => onShow(SHOW_DRAG, e.target.checked)}/>
 			</div>
 			<button type="button" class="btn btn-success" onClick={onThrow}>Throw!</button>
 		</div>

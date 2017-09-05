@@ -1,5 +1,5 @@
 import DiscCalculator, {DISC_CONTOUR} from 'disc/DiscCalculator'
-import DiscState, {UP, POS, VEL} from 'disc/DiscState'
+import DiscState, {UP, POS, VEL, LIFT, DRAG} from 'disc/DiscState'
 
 const DISC_POINTS = [
 	new THREE.Vector2(0, 0),
@@ -14,8 +14,38 @@ const DISC_POINTS = [
 
 const VY = new THREE.Vector3(0,1,0)
 
+export const SHOW_PATH = 'path',
+	SHOW_LIFT = LIFT,
+	SHOW_DRAG = DRAG
+
+
+const lineFloatArray = (a,b) => {
+	const positions = a.toArray()
+	positions.push(...b.toArray())
+	return new Float32Array(positions)
+}
+
+// Create a line from a to b, of the given color
+const createLine = (a, b, color) => {
+	const geom = new THREE.BufferGeometry()
+	const material = new THREE.LineBasicMaterial({color: color})
+
+	geom.addAttribute('position', new THREE.BufferAttribute(lineFloatArray(a,b), 3))
+	geom.computeBoundingSphere()
+	return new THREE.Line(geom, material)
+}
+
+
+// Move a previously-created line to the new given coordinates
+const moveLine = (line, a, b) => {
+	line.geometry.addAttribute('position', new THREE.BufferAttribute(lineFloatArray(a,b), 3))
+	line.geometry.computeBoundingSphere()
+}
+
+
 class Disc {
 	constructor(scene) {
+		this.show = {}
 		this.scene = scene
 
 		this.initialState = new DiscState()
@@ -27,20 +57,19 @@ class Disc {
 		this.gotoInitialState()
 	}
 
-	setShowTrajectory(show) {
-		this.showTrajectory = !!show
+	setShow(show) {
+		this.show[show] = !this.show[show]
 		if(this.steps) {
-			if(this.showTrajectory) {
-				this.createTrajectory()
-			} else {
-				this.hideTrajectory()
-			}
+			this.showOrHideExtras()
 		}
 	}
 
 	gotoState(state) {
 		this.discMesh.position.copy(state[POS])
 		this.discMesh.quaternion.setFromUnitVectors(VY, state[UP])
+
+		this.drawVector(state, LIFT, 0x00FF00)
+		this.drawVector(state, DRAG, 0xFF0000)
 	}
 
 	gotoInitialState() {
@@ -65,10 +94,10 @@ class Disc {
 
 	// Show/hide optional stuff
 	showOrHideExtras() {
-		if(this.showTrajectory) {
-			this.createTrajectory()
+		if(this.show[SHOW_PATH]) {
+			this.createPath()
 		} else {
-			this.hideTrajectory()
+			this.hidePath()
 		}
 	}
 
@@ -89,14 +118,14 @@ class Disc {
 		this.scene.add(this.discMesh)
 	}
 
-	hideTrajectory() {
+	hidePath() {
 		if(this.stepsMesh) {
 			this.scene.remove(this.stepsMesh)
 		}
 	}
 
-	createTrajectory() {
-		this.hideTrajectory()
+	createPath() {
+		this.hidePath()
 		const {steps} = this
 
 		const geom = new THREE.BufferGeometry()
@@ -125,6 +154,22 @@ class Disc {
 
 		this.stepsMesh = new THREE.Line(geom, material)
 		this.scene.add(this.stepsMesh)
+	}
+
+	drawVector(state, type, color) {
+		if(!this.show[type] || !state[type] || !state[POS]) {
+			if(this['vector' + type]) {
+				this.scene.remove(this['vector' + type])
+			}
+			return
+		} else {
+			if(!this['vector' + type]) {
+				this['vector' + type] = createLine(state[POS], state[POS].clone().add(state[type]), color)
+				this.scene.add(this['vector' + type])
+			} else {
+				moveLine(this['vector' + type], state[POS], state[POS].clone().add(state[type]))
+			}
+		}
 	}
 }
 
