@@ -5,7 +5,11 @@ import InputGroup from 'InputGroup'
 class VectorInput extends Component {
 	constructor(props) {
 		super(props)
-		this.state = {x:0, y:0, z:0}
+		if(props.value) {
+			this.state = {x:props.value.x, y:props.value.y, z:props.value.z}
+		} else {
+			this.state = {x:0, y:0, z:0}
+		}
 		this.notifyUpdate = this.notifyUpdate.bind(this)
 		this.reset = this.reset.bind(this)
 	}

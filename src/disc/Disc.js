@@ -1,5 +1,5 @@
 import DiscCalculator, {DISC_CONTOUR} from 'disc/DiscCalculator'
-import DiscState, {UP, POS, VEL, LIFT, DRAG, D1, D2, D3} from 'disc/DiscState'
+import DiscState, {UP, OMEGA, TORQUE, POS, VEL, LIFT, DRAG, D1, D2, D3, FORCE} from 'disc/DiscState'
 
 // Draw the path of the disc
 export const PATH = 'path'
@@ -16,14 +16,17 @@ const DISC_POINTS = [
 ]
 
 const VY = new THREE.Vector3(0,1,0)
-const DRAWABLE_VECTORS = [VEL, LIFT, DRAG, D1, D2, D3]
-const DRAWABLE_VECTOR_COLORS = {
+// Vectors that can be drawn, and their colors
+const DRAWABLE_VECTORS = {
 	[LIFT]: 0x00AA50,
 	[DRAG]: 0xAA0050,
+	[FORCE]: 0xFF00FF,
 	[VEL]: 0x808080,
 	[D1]: 0xFF0000,
 	[D2]: 0x00FF00,
 	[D3]: 0x0000FF,
+	[OMEGA]: 0x4080B0,
+	[TORQUE]: 0xB08040,
 }
 
 const lineFloatArray = (a,b) => {
@@ -77,7 +80,7 @@ class Disc {
 		this.discMesh.position.copy(state[POS])
 		this.discMesh.quaternion.setFromUnitVectors(VY, state[UP])
 
-		DRAWABLE_VECTORS.forEach(v => this.moveVector(v))
+		Object.keys(DRAWABLE_VECTORS).forEach(v => this.moveVector(v))
 	}
 
 	gotoInitialState() {
@@ -108,7 +111,7 @@ class Disc {
 			this.hidePath()
 		}
 
-		DRAWABLE_VECTORS.forEach(v => this.createOrHideVector(v))
+		Object.keys(DRAWABLE_VECTORS).forEach(v => this.createOrHideVector(v))
 	}
 
 	createDiscMesh() {
@@ -178,7 +181,7 @@ class Disc {
 				this['vector' + type] = createLine(
 					this.currentState[POS],
 					this.currentState[POS].clone().add(this.currentState[type]),
-					DRAWABLE_VECTOR_COLORS[type])
+					DRAWABLE_VECTORS[type])
 				this.scene.add(this['vector' + type])
 			}
 		}

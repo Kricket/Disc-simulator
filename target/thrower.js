@@ -59,7 +59,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "96561e6fdbfc531e2f22"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "49eb208644e6d629a404"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
@@ -57935,14 +57935,18 @@ Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 // Components of the state
 var
 // Disc normal vector
 UP = exports.UP = 'up',
+
+// Rotational velocity
+OMEGA = exports.OMEGA = 'omega',
+
+// Moment
+TORQUE = exports.TORQUE = 'torque',
 
 // Linear position of the disc
 POS = exports.POS = 'pos',
@@ -57959,41 +57963,38 @@ DRAG = exports.DRAG = 'drag',
 // Number of seconds elapsed since the start of the throw
 TIME = exports.TIME = 'time',
 
+// Total force
+FORCE = exports.FORCE = 'force',
+
 // Reference axes of the disc. D1 goes forward in the dir of velocity, D2 is the normal, D3 = D1 x D2
 D1 = exports.D1 = 'd1',
     D2 = exports.D2 = 'd2',
     D3 = exports.D3 = 'd3';
 
-var DiscState = function () {
-	function DiscState() {
-		_classCallCheck(this, DiscState);
+var DiscState = function DiscState(copy) {
+	var _this = this;
 
+	_classCallCheck(this, DiscState);
+
+	if (copy) {
+		Object.keys(copy).forEach(function (k) {
+			_this[k] = copy[k].clone ? copy[k].clone() : copy[k];
+		}, this);
+	} else {
 		this[UP] = new THREE.Vector3(0, 1, 0);
+		this[OMEGA] = new THREE.Vector3(0, 1, 0);
 		this[POS] = new THREE.Vector3(0, 1, 0);
 		this[VEL] = new THREE.Vector3(1, 1, 0);
-		this[LIFT] = new THREE.Vector3(0, 0, 0);
-		this[DRAG] = new THREE.Vector3(0, 0, 0);
+		this[LIFT] = new THREE.Vector3();
+		this[DRAG] = new THREE.Vector3();
 		this[D1] = new THREE.Vector3(1, 0, 0);
 		this[D2] = new THREE.Vector3(0, 1, 0);
 		this[D3] = new THREE.Vector3(0, 0, 1);
+		this[FORCE] = new THREE.Vector3();
+		this[TORQUE] = new THREE.Vector3();
 		this[TIME] = 0;
 	}
-
-	_createClass(DiscState, [{
-		key: 'clone',
-		value: function clone() {
-			var _this = this;
-
-			var s = new DiscState();
-			Object.keys(this).forEach(function (k) {
-				s[k] = _this[k].clone ? _this[k].clone() : _this[k];
-			}, this);
-			return s;
-		}
-	}]);
-
-	return DiscState;
-}();
+};
 
 exports.default = DiscState;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11)))
@@ -62202,7 +62203,7 @@ var InputGroup = function InputGroup(_ref) {
 			label
 		), _react2.default.createElement("input", { className: "form-control",
 			type: type,
-			value: value,
+			defaultValue: value,
 			onChange: onChange })]
 	);
 };
@@ -62223,7 +62224,7 @@ exports.PATH = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _DRAWABLE_VECTOR_COLO;
+var _DRAWABLE_VECTORS;
 
 var _DiscCalculator = __webpack_require__(91);
 
@@ -62247,8 +62248,8 @@ var PATH = exports.PATH = 'path';
 var DISC_POINTS = [new THREE.Vector2(0, 0), new THREE.Vector2(0.15, 0), new THREE.Vector2(0.2, -0.005), new THREE.Vector2(0.23, -0.007), new THREE.Vector2(0.25, -0.01), new THREE.Vector2(0.24, -0.02)];
 
 var VY = new THREE.Vector3(0, 1, 0);
-var DRAWABLE_VECTORS = [_DiscState.VEL, _DiscState.LIFT, _DiscState.DRAG, _DiscState.D1, _DiscState.D2, _DiscState.D3];
-var DRAWABLE_VECTOR_COLORS = (_DRAWABLE_VECTOR_COLO = {}, _defineProperty(_DRAWABLE_VECTOR_COLO, _DiscState.LIFT, 0x00AA50), _defineProperty(_DRAWABLE_VECTOR_COLO, _DiscState.DRAG, 0xAA0050), _defineProperty(_DRAWABLE_VECTOR_COLO, _DiscState.VEL, 0x808080), _defineProperty(_DRAWABLE_VECTOR_COLO, _DiscState.D1, 0xFF0000), _defineProperty(_DRAWABLE_VECTOR_COLO, _DiscState.D2, 0x00FF00), _defineProperty(_DRAWABLE_VECTOR_COLO, _DiscState.D3, 0x0000FF), _DRAWABLE_VECTOR_COLO);
+// Vectors that can be drawn, and their colors
+var DRAWABLE_VECTORS = (_DRAWABLE_VECTORS = {}, _defineProperty(_DRAWABLE_VECTORS, _DiscState.LIFT, 0x00AA50), _defineProperty(_DRAWABLE_VECTORS, _DiscState.DRAG, 0xAA0050), _defineProperty(_DRAWABLE_VECTORS, _DiscState.FORCE, 0xFF00FF), _defineProperty(_DRAWABLE_VECTORS, _DiscState.VEL, 0x808080), _defineProperty(_DRAWABLE_VECTORS, _DiscState.D1, 0xFF0000), _defineProperty(_DRAWABLE_VECTORS, _DiscState.D2, 0x00FF00), _defineProperty(_DRAWABLE_VECTORS, _DiscState.D3, 0x0000FF), _defineProperty(_DRAWABLE_VECTORS, _DiscState.OMEGA, 0x4080B0), _defineProperty(_DRAWABLE_VECTORS, _DiscState.TORQUE, 0xB08040), _DRAWABLE_VECTORS);
 
 var lineFloatArray = function lineFloatArray(a, b) {
 	var positions = a.toArray();
@@ -62307,7 +62308,7 @@ var Disc = function () {
 			this.discMesh.position.copy(state[_DiscState.POS]);
 			this.discMesh.quaternion.setFromUnitVectors(VY, state[_DiscState.UP]);
 
-			DRAWABLE_VECTORS.forEach(function (v) {
+			Object.keys(DRAWABLE_VECTORS).forEach(function (v) {
 				return _this.moveVector(v);
 			});
 		}
@@ -62348,7 +62349,7 @@ var Disc = function () {
 				this.hidePath();
 			}
 
-			DRAWABLE_VECTORS.forEach(function (v) {
+			Object.keys(DRAWABLE_VECTORS).forEach(function (v) {
 				return _this2.createOrHideVector(v);
 			});
 		}
@@ -62424,7 +62425,7 @@ var Disc = function () {
 				return;
 			} else {
 				if (!this['vector' + type]) {
-					this['vector' + type] = createLine(this.currentState[_DiscState.POS], this.currentState[_DiscState.POS].clone().add(this.currentState[type]), DRAWABLE_VECTOR_COLORS[type]);
+					this['vector' + type] = createLine(this.currentState[_DiscState.POS], this.currentState[_DiscState.POS].clone().add(this.currentState[type]), DRAWABLE_VECTORS[type]);
 					this.scene.add(this['vector' + type]);
 				}
 			}
@@ -66298,7 +66299,11 @@ var VectorInput = function (_Component) {
 
 		var _this = _possibleConstructorReturn(this, (VectorInput.__proto__ || Object.getPrototypeOf(VectorInput)).call(this, props));
 
-		_this.state = { x: 0, y: 0, z: 0 };
+		if (props.value) {
+			_this.state = { x: props.value.x, y: props.value.y, z: props.value.z };
+		} else {
+			_this.state = { x: 0, y: 0, z: 0 };
+		}
 		_this.notifyUpdate = _this.notifyUpdate.bind(_this);
 		_this.reset = _this.reset.bind(_this);
 		return _this;
@@ -66386,6 +66391,10 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _DiscState = __webpack_require__(25);
 
+var _DiscState2 = _interopRequireDefault(_DiscState);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var _THREE = THREE,
@@ -66404,10 +66413,10 @@ var AIR_DENSITY = 1.204; // ~20°C: kg/m^3
 var AIR_VISCOSITY = 18.27; // ~15°C: kg/(ms) = Pa.s
 
 // Aerodynamic coefficients (see "Simulation of Frisbee Flight")
-var CL0 = -0.19;
-var CLalpha = -2.4;
-var CD0 = 0.1;
-var CDalpha = 2.0;
+var CL0 = -0.19; // Base lift coefficient
+var CLalpha = -2.4; // alpha-dependent lift coefficient
+var CD0 = 0.1; // Base drag coefficient
+var CDalpha = 2.0; // alpha-dependent drag coefficient
 var pCDalpha = 4.0; // for positive angle-of-attack
 
 // Inertia. Since the disc is symmetric, we can cheat here a bit...
@@ -66419,14 +66428,81 @@ var FR_MASS = 0.175; // kg
 var FR_RADIUS = 0.1365; // meters
 var FR_HEIGHT = 0.025; // meters
 
-// Angle at which the COP coincides with the COG. Should be ~ -4° = .06981317
+// Angle of minimum drag and zero lift. Should be ~ -4° = .06981317
 var alpha0 = -CL0 / CLalpha;
 // Area of the plane of the disc
 var FR_AREA = Math.PI * FR_RADIUS * FR_RADIUS;
 
+/******************************************************************************
+     CALCULATION OF TORQUE
+
+Torque on the disc is generated because the Center of Gravity (COG) is usually
+not the same as the Center of (Aerodynamic) Pressure (COP - the point where the
+aerodynamic forces are applied). In fact, they coincide at 3 angles: PI/2 and
+-PI/2 (i.e. velocity is parallel with the disc normal), and alphaS (stable).
+
+I estimate this offset (r) with 4 simple lines (r = m*alpha + b):
+     x (nMIDalpha, nCOPmax)
+    / \
+   /   \ aS      PI/2
+ -x-----x-|-------x-
+-PI/2    \`      /
+          \     /
+           \   /
+            \ /
+             x (pMIDalpha, pCOPmax)
+******************************************************************************/
+var alphaS = -0.157079633; // angle at which COP = COG (~ -9°)
+
+// Negative alpha
+var nCOPmax = FR_RADIUS / 20; // Maximum center of pressure
+var nMIDalpha = alphaS / 2 - Math.PI / 4; // alpha for max COP
+var nCOPm = nCOPmax / (nMIDalpha + Math.PI / 2); // Slope of line, negative alpha (left segment)
+
+// Positive alpha
+var pCOPmax = FR_RADIUS / -10; // max. center of pressure
+var pMIDalpha = alphaS / 2 + Math.PI / 4; // alpha for max COP
+var pCOPm = pCOPmax / (pMIDalpha - alphaS); // Slope of line, positive alpha (left segment)
+
+var getTorqueMag = function getTorqueMag(alpha) {
+	if (alpha < nMIDalpha) {
+		return (alpha + Math.PI / 2) * nCOPm;
+	} else if (alpha < alphaS) {
+		return (alphaS - alpha) * nCOPm;
+	} else if (alpha < pMIDalpha) {
+		return (alpha - alphaS) * pCOPm;
+	} else {
+		return (Math.PI / 2 - alpha) * pCOPm;
+	}
+};
+/*
+console.log("-----------negative")
+console.log("nCOPmax = " + nCOPmax)
+console.log("nMIDalpha = " + nMIDalpha)
+console.log("nCOPm = " + nCOPm)
+
+console.log("-----------positive")
+console.log("pCOPmax = " + pCOPmax)
+console.log("pMIDalpha = " + pMIDalpha)
+console.log("pCOPm = " + pCOPm)
+
+console.log("-----------test")
+console.log("offset at     -PI/2: " + getTorqueMag(-Math.PI/2))
+console.log("offset at nMIDalpha: " + getTorqueMag(nMIDalpha))
+console.log("offset at    alphaS: " + getTorqueMag(alphaS))
+console.log("offset at pMIDalpha: " + getTorqueMag(pMIDalpha))
+console.log("offset at      PI/2: " + getTorqueMag(Math.PI/2))
+const da = Math.PI / 16
+for(var x = -8; x <= 8; x++) {
+	console.log("Alpha = " + x + " PI / 16;  offset = " + getTorqueMag(x*da))
+}
+*/
+/*****************************************************************************/
+
 // Shape of the disc
 var DISC_CONTOUR = exports.DISC_CONTOUR = [new THREE.Vector2(0, 0), new THREE.Vector2(0.8 * FR_RADIUS, 0), new THREE.Vector2(0.97 * FR_RADIUS, -0.32 * FR_HEIGHT), new THREE.Vector2(1.0 * FR_RADIUS, -0.72 * FR_HEIGHT), new THREE.Vector2(0.98 * FR_RADIUS, -1.0 * FR_HEIGHT)];
 
+// Floating-point rounding
 var EPSILON = 0.0000000001;
 var isZero = function isZero(x) {
 	return Math.abs(x) < EPSILON;
@@ -66455,7 +66531,7 @@ var DiscCalculator = function () {
 	function DiscCalculator(initState) {
 		_classCallCheck(this, DiscCalculator);
 
-		this.state = initState.clone();
+		this.state = new _DiscState2.default(initState);
 	}
 
 	// Start the async calculation loop
@@ -66464,13 +66540,13 @@ var DiscCalculator = function () {
 	_createClass(DiscCalculator, [{
 		key: 'calculate',
 		value: function calculate(update, done) {
-			this.steps = [this.state.clone()];
+			this.steps = [new _DiscState2.default(this.state)];
 			var self = this;
 
 			var calculate = function calculate(t) {
 				update(self.state.time);
 				self.step();
-				self.steps.push(self.state.clone());
+				self.steps.push(new _DiscState2.default(self.state));
 				if (self.state.pos.y > 0) {
 					requestAnimationFrame(calculate);
 				} else {
@@ -66501,9 +66577,6 @@ var DiscCalculator = function () {
 			// Setup
 			//===================
 
-			var force = new Vector3(0, GRAVITY, 0);
-			var torque = new Vector3();
-
 			// Axes of the disc frame. d3 is the disc normal, d1 points in the dir of attack
 			var d3 = this.state[_DiscState.UP];
 			var d1 = getForwardVector(d3, this.state[_DiscState.VEL]);
@@ -66519,37 +66592,69 @@ var DiscCalculator = function () {
 			var planf_area = FR_AREA * Math.abs(Math.sin(alpha)) + // Flat surface of the disc
 			FR_HEIGHT * FR_RADIUS * Math.cos(alpha); // Rim of the disc
 
+			// A value that appears in several of the next calculations
+			var pAv2_2 = AIR_DENSITY * planf_area * vsq / 2;
+
 			//===================
 			// Drag and Lift
 			//===================
 
 			// Coefficient of drag
 			var CD = CD0 + CDalpha * squared(alpha - alpha0);
-			var fDrag = nVel.clone().multiplyScalar(CD * AIR_DENSITY * planf_area * vsq * -0.5);
+			var fDrag = nVel.clone().multiplyScalar(-CD * pAv2_2 // The negative is so that this points away from velocity
+			);
+
+			// To calculate lift, start by figuring out its direction. It's perpendicular to vel.
+			// We can get this by rotating d3 by alpha in the (d3, d1) plane
+			var fLift = d3.clone().multiplyScalar(Math.cos(alpha)).add(d1.clone().multiplyScalar(-Math.sin(alpha)));
 
 			// Coefficient of lift
 			var CL = CL0 + CLalpha * alpha;
-			// To calculate lift, start by figuring out its direction. It's perpendicular to vel.
-			// We can get this by rotating d3 by alpha
-			var fLift = d3.clone().multiplyScalar(Math.cos(alpha)).add(d1.clone().multiplyScalar(-Math.sin(alpha)));
 
 			// Now, just get the magnitude of lift
-			fLift.multiplyScalar(CL * AIR_DENSITY * planf_area * vsq * 0.5);
+			fLift.multiplyScalar(CL * pAv2_2);
 
-			force.add(fLift);
-			force.add(fDrag);
+			//===================
+			// Torque
+			//===================
+
+			var force = fLift.clone().add(fDrag);
+			var torque = d1.clone().cross(force).multiplyScalar(getTorqueMag(alpha));
+
+			// Next: the spin creates a slight rolling torque..
+			torque.add(alpha < alphaS ? this.state[_DiscState.OMEGA].clone().cross(d2).multiplyScalar(vsq / 3000000) : d2.clone().cross(this.state[_DiscState.OMEGA]).multiplyScalar(vsq / 500000));
 
 			//===================
 			// Save and Integrate
 			//===================
 
+			// Add in gravity
+			force.y += GRAVITY * FR_MASS;
+
+			//--- Rotation ------------------------//
+
+			this.state[_DiscState.TORQUE] = torque.clone().multiplyScalar(200); // Make it bigger so it's more visible
+
+			// To get the change in angular velocity, we need to decompose torque into its d2 and (d1,d3) components
+			var yTorque = torque.clone().projectOnVector(d3);
+			var xzTorque = torque.clone().sub(yTorque);
+			var dOmega = yTorque.divideScalar(Iy).add(xzTorque.divideScalar(Ixz)).multiplyScalar(SIM_DT);
+			var omega = this.state[_DiscState.OMEGA].add(dOmega);
+
+			// Rotate d3 around omega
+			var oNorm = omega.length();
+			if (!isZero(oNorm)) {
+				this.state[_DiscState.UP] = d3.clone().applyAxisAngle(omega.clone().normalize(), oNorm * SIM_DT);
+			}
+
+			//--- Linear --------------------------//
 			this.state[_DiscState.D1] = d1;
 			this.state[_DiscState.D2] = d2;
 			this.state[_DiscState.D3] = d3;
 
 			this.state[_DiscState.LIFT] = fLift;
 			this.state[_DiscState.DRAG] = fDrag;
-			this.state.force = force.clone();
+			this.state[_DiscState.FORCE] = force.clone();
 
 			force.multiplyScalar(SIM_DT);
 			this.state[_DiscState.VEL].add(force);
@@ -66626,6 +66731,13 @@ var DiscControls = function (_Component) {
 			this.props.disc.setInitial(comp, new (Function.prototype.bind.apply(THREE.Vector3, [null].concat(_toConsumableArray(val))))());
 		}
 	}, {
+		key: 'onOmegaChange',
+		value: function onOmegaChange(val) {
+			var disc = this.props.disc;
+
+			disc.setInitial(_DiscState.OMEGA, disc.initialState[_DiscState.UP].clone().multiplyScalar(val));
+		}
+	}, {
 		key: 'onShow',
 		value: function onShow(key, val) {
 			this.props.disc.setShow(key, val);
@@ -66659,8 +66771,8 @@ var DiscControls = function (_Component) {
 						null,
 						'Spin velocity'
 					),
-					_react2.default.createElement(_InputGroup2.default, { label: '\u03A9', onChange: function onChange(e) {
-							return _this2.onChange(OMEGA, e.target.value);
+					_react2.default.createElement(_InputGroup2.default, { label: '\u03A9', value: this.props.disc.initialState[_DiscState.OMEGA].length(), onChange: function onChange(e) {
+							return _this2.onOmegaChange(e.target.value);
 						} }),
 					_react2.default.createElement(
 						'label',
@@ -66691,6 +66803,19 @@ var DiscControls = function (_Component) {
 						} }),
 					_react2.default.createElement(_InputGroup2.default, { label: 'Drag', type: 'checkbox', onChange: function onChange(e) {
 							return _this2.onShow(_DiscState.DRAG, e.target.checked);
+						} })
+				),
+				_react2.default.createElement(
+					'div',
+					{ className: 'btn-group btn-group-vertical vector-group' },
+					_react2.default.createElement(_InputGroup2.default, { label: 'Total force', type: 'checkbox', onChange: function onChange(e) {
+							return _this2.onShow(_DiscState.FORCE, e.target.checked);
+						} }),
+					_react2.default.createElement(_InputGroup2.default, { label: 'Rotation', type: 'checkbox', onChange: function onChange(e) {
+							return _this2.onShow(_DiscState.OMEGA, e.target.checked);
+						} }),
+					_react2.default.createElement(_InputGroup2.default, { label: 'Torque * 200', type: 'checkbox', onChange: function onChange(e) {
+							return _this2.onShow(_DiscState.TORQUE, e.target.checked);
 						} }),
 					_react2.default.createElement(_InputGroup2.default, { label: 'Axes', type: 'checkbox', onChange: this.showAxes })
 				),
