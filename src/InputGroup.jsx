@@ -10,7 +10,7 @@ const InputGroup = ({label, value = 0, onChange, type="number"}) => <div classNa
 		<span className="input-group-addon">{label}</span>,
 		<input className="form-control"
 			type={type}
-			defaultValue={value}
+			value={value}
 			onChange={onChange}/>
 	]}
 </div>

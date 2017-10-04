@@ -1,5 +1,17 @@
 import 'three/examples/js/controls/OrbitControls'
 
+const getRealDimensions = elem => {
+	const d = {
+		width: elem.clientWidth,
+		height: elem.clientHeight
+	}
+
+	const style = getComputedStyle(elem)
+	d.width -= parseFloat(style.paddingLeft) + parseFloat(style.paddingRight)
+	d.height -= parseFloat(style.paddingTop) + parseFloat(style.paddingBottom)
+	return d
+}
+
 class World {
 	constructor(worldElement) {
 		this.init(worldElement)
@@ -16,8 +28,9 @@ class World {
 		this.scene.add(new THREE.AmbientLight(0x404040))
 		this.scene.add(new THREE.DirectionalLight(0xFFFFFF, 0.5))
 
+		const dim = getRealDimensions(worldElement)
 		this.renderer = new THREE.WebGLRenderer()
-		this.renderer.setSize(worldElement.offsetWidth, worldElement.offsetHeight)
+		this.renderer.setSize(dim.width, dim.height)
 		worldElement.appendChild(this.renderer.domElement)
 
 		//this.scene.add(new THREE.AxisHelper(1))

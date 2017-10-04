@@ -73,22 +73,24 @@ class TimeSlider extends Component {
 
 		return (
 			<div className="row">
-				{playing ?
-					<button type="button" onClick={this.onPause} className="btn">
-						<span className="glyphicon glyphicon-pause" title="Pause animation"/>
-					</button> :
-					<button type="button" onClick={this.onPlay} className="btn">
-						<span className="glyphicon glyphicon-play" title="Animate last throw"/>
-					</button>
-				}
-				<span className="padded">
-					<input id="timeSlider"
-						type="text"
-						data-provide="slider"
-						data-slider-min="0"
-						data-slider-step="0.01"
-						data-slider-value="0"/>
-				</span>
+				<div className="col-xs-12">
+					{playing ?
+						<button type="button" onClick={this.onPause} className="btn">
+							<span className="glyphicon glyphicon-pause" title="Pause animation"/>
+						</button> :
+						<button type="button" onClick={this.onPlay} className="btn">
+							<span className="glyphicon glyphicon-play" title="Animate last throw"/>
+						</button>
+					}
+					<span className="padded">
+						<input id="timeSlider"
+							type="text"
+							data-provide="slider"
+							data-slider-min="0"
+							data-slider-step="0.01"
+							data-slider-value="0"/>
+					</span>
+				</div>
 			</div>
 		)
 	}

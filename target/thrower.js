@@ -59,7 +59,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "072c044c41ddadf41b5b"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "9a4e3b28abd21297341c"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
@@ -62203,7 +62203,7 @@ var InputGroup = function InputGroup(_ref) {
 			label
 		), _react2.default.createElement("input", { className: "form-control",
 			type: type,
-			defaultValue: value,
+			value: value,
 			onChange: onChange })]
 	);
 };
@@ -65991,13 +65991,13 @@ var Interface = function (_Component) {
 				{ className: 'container-fluid' },
 				_react2.default.createElement(
 					'div',
-					{ className: 'well' },
+					{ className: 'row' },
+					_react2.default.createElement('div', { className: 'col-xs-9', id: 'world', style: { height: "900px" } }),
 					_react2.default.createElement(
 						'div',
-						{ className: 'row' },
-						_react2.default.createElement('div', { className: 'col-xs-12', id: 'world', style: { height: "700px" } })
-					),
-					_react2.default.createElement(_DiscController2.default, { disc: disc })
+						{ className: 'col-xs-3' },
+						_react2.default.createElement(_DiscController2.default, { disc: disc })
+					)
 				)
 			);
 		}
@@ -66050,6 +66050,22 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+var vecToState = function vecToState(vec) {
+	if (vec) {
+		return {
+			x: vec.x,
+			y: vec.y,
+			z: vec.z
+		};
+	} else {
+		return {
+			x: 0,
+			y: 0,
+			z: 0
+		};
+	}
+};
+
 var VectorInput = function (_Component) {
 	_inherits(VectorInput, _Component);
 
@@ -66058,17 +66074,18 @@ var VectorInput = function (_Component) {
 
 		var _this = _possibleConstructorReturn(this, (VectorInput.__proto__ || Object.getPrototypeOf(VectorInput)).call(this, props));
 
-		if (props.value) {
-			_this.state = { x: props.value.x, y: props.value.y, z: props.value.z };
-		} else {
-			_this.state = { x: 0, y: 0, z: 0 };
-		}
+		_this.state = vecToState(props.value);
 		_this.notifyUpdate = _this.notifyUpdate.bind(_this);
 		_this.reset = _this.reset.bind(_this);
 		return _this;
 	}
 
 	_createClass(VectorInput, [{
+		key: 'componentWillReceiveProps',
+		value: function componentWillReceiveProps(nextProps) {
+			this.setState(vecToState(nextProps.value));
+		}
+	}, {
 		key: 'notifyUpdate',
 		value: function notifyUpdate() {
 			if (this.props.onChange) {
@@ -66512,6 +66529,18 @@ __webpack_require__(193);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+var getRealDimensions = function getRealDimensions(elem) {
+	var d = {
+		width: elem.clientWidth,
+		height: elem.clientHeight
+	};
+
+	var style = getComputedStyle(elem);
+	d.width -= parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+	d.height -= parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+	return d;
+};
+
 var World = function () {
 	function World(worldElement) {
 		_classCallCheck(this, World);
@@ -66532,8 +66561,9 @@ var World = function () {
 			this.scene.add(new THREE.AmbientLight(0x404040));
 			this.scene.add(new THREE.DirectionalLight(0xFFFFFF, 0.5));
 
+			var dim = getRealDimensions(worldElement);
 			this.renderer = new THREE.WebGLRenderer();
-			this.renderer.setSize(worldElement.offsetWidth, worldElement.offsetHeight);
+			this.renderer.setSize(dim.width, dim.height);
 			worldElement.appendChild(this.renderer.domElement);
 
 			//this.scene.add(new THREE.AxisHelper(1))
@@ -84005,7 +84035,7 @@ var DiscController = function (_Component) {
 
 			return _react2.default.createElement(
 				'div',
-				null,
+				{ className: 'row' },
 				!!calcTime && _react2.default.createElement(
 					'div',
 					{ className: 'loading-overlay' },
@@ -84017,67 +84047,93 @@ var DiscController = function (_Component) {
 					)
 				),
 				!!steps && _react2.default.createElement(_TimeSlider2.default, { onStep: this.onStep, max: steps[steps.length - 1].time }),
-				_react2.default.createElement(_VectorInput2.default, { label: 'Orientation', value: discState[_DiscState.UP], onChange: function onChange(up) {
-						return _this2.onChange(_DiscState.UP, up);
-					} }),
 				_react2.default.createElement(
 					'div',
-					{ className: 'btn-group btn-group-vertical vector-group' },
-					_react2.default.createElement(
-						'label',
-						null,
-						'Spin velocity'
-					),
-					_react2.default.createElement(_InputGroup2.default, { label: '\u03A9', value: discState[_DiscState.OMEGA].length(), onChange: this.onOmegaChange }),
-					_react2.default.createElement(
-						'label',
-						null,
-						'Spin offset (degrees)'
-					),
-					_react2.default.createElement(_InputGroup2.default, { label: '\xB0', onChange: function onChange(e) {
-							return _this2.onChange('SPINOFF', e.target.value);
-						} })
-				),
-				_react2.default.createElement(_VectorInput2.default, { label: 'Position', value: discState[_DiscState.POS], onChange: function onChange(pos) {
-						return _this2.onChange(_DiscState.POS, pos);
-					} }),
-				_react2.default.createElement(_VectorInput2.default, { label: 'Velocity', value: discState[_DiscState.VEL], onChange: function onChange(vel) {
-						return _this2.onChange(_DiscState.VEL, vel);
-					} }),
-				_react2.default.createElement(
-					'div',
-					{ className: 'btn-group btn-group-vertical vector-group' },
-					_react2.default.createElement(_InputGroup2.default, { label: 'Path', type: 'checkbox', onChange: function onChange(e) {
-							return disc.setShow(_Disc.PATH, e.target.checked);
-						} }),
-					_react2.default.createElement(_InputGroup2.default, { label: 'Velocity', type: 'checkbox', onChange: function onChange(e) {
-							return disc.setShow(_DiscState.VEL, e.target.checked);
-						} }),
-					_react2.default.createElement(_InputGroup2.default, { label: 'Lift', type: 'checkbox', onChange: function onChange(e) {
-							return disc.setShow(_DiscState.LIFT, e.target.checked);
-						} }),
-					_react2.default.createElement(_InputGroup2.default, { label: 'Drag', type: 'checkbox', onChange: function onChange(e) {
-							return disc.setShow(_DiscState.DRAG, e.target.checked);
+					{ className: 'col-xs-12 col-lg-6' },
+					_react2.default.createElement(_VectorInput2.default, { label: 'Orientation', value: discState[_DiscState.UP], onChange: function onChange(up) {
+							return _this2.onChange(_DiscState.UP, up);
 						} })
 				),
 				_react2.default.createElement(
 					'div',
-					{ className: 'btn-group btn-group-vertical vector-group' },
-					_react2.default.createElement(_InputGroup2.default, { label: 'Total force', type: 'checkbox', onChange: function onChange(e) {
-							return disc.setShow(_DiscState.FORCE, e.target.checked);
-						} }),
-					_react2.default.createElement(_InputGroup2.default, { label: 'Rotation', type: 'checkbox', onChange: function onChange(e) {
-							return disc.setShow(_DiscState.OMEGA, e.target.checked);
-						} }),
-					_react2.default.createElement(_InputGroup2.default, { label: 'Torque * 200', type: 'checkbox', onChange: function onChange(e) {
-							return disc.setShow(_DiscState.TORQUE, e.target.checked);
-						} }),
-					_react2.default.createElement(_InputGroup2.default, { label: 'Axes', type: 'checkbox', onChange: this.showAxes })
+					{ className: 'col-xs-12 col-lg-6' },
+					_react2.default.createElement(
+						'div',
+						{ className: 'btn-group btn-group-vertical vector-group' },
+						_react2.default.createElement(
+							'label',
+							null,
+							'Spin velocity'
+						),
+						_react2.default.createElement(_InputGroup2.default, { label: '\u03A9', value: discState[_DiscState.OMEGA].length(), onChange: this.onOmegaChange }),
+						_react2.default.createElement(
+							'label',
+							null,
+							'Spin offset (degrees)'
+						),
+						_react2.default.createElement(_InputGroup2.default, { label: '\xB0', onChange: function onChange(e) {
+								return _this2.onChange('SPINOFF', e.target.value);
+							} })
+					)
+				),
+				_react2.default.createElement('div', { className: 'clearfix' }),
+				_react2.default.createElement(
+					'div',
+					{ className: 'col-xs-12 col-lg-6' },
+					_react2.default.createElement(_VectorInput2.default, { label: 'Position', value: discState[_DiscState.POS], onChange: function onChange(pos) {
+							return _this2.onChange(_DiscState.POS, pos);
+						} })
 				),
 				_react2.default.createElement(
-					'button',
-					{ type: 'button', 'class': 'btn btn-success', onClick: this.onThrow },
-					'Throw!'
+					'div',
+					{ className: 'col-xs-12 col-lg-6' },
+					_react2.default.createElement(_VectorInput2.default, { label: 'Velocity', value: discState[_DiscState.VEL], onChange: function onChange(vel) {
+							return _this2.onChange(_DiscState.VEL, vel);
+						} })
+				),
+				_react2.default.createElement('div', { className: 'clearfix' }),
+				_react2.default.createElement(
+					'div',
+					{ className: 'col-xs-12' },
+					_react2.default.createElement(
+						'div',
+						{ className: 'btn-group btn-group-vertical vector-group' },
+						_react2.default.createElement(_InputGroup2.default, { label: 'Path', type: 'checkbox', onChange: function onChange(e) {
+								return disc.setShow(_Disc.PATH, e.target.checked);
+							} }),
+						_react2.default.createElement(_InputGroup2.default, { label: 'Velocity', type: 'checkbox', onChange: function onChange(e) {
+								return disc.setShow(_DiscState.VEL, e.target.checked);
+							} }),
+						_react2.default.createElement(_InputGroup2.default, { label: 'Lift', type: 'checkbox', onChange: function onChange(e) {
+								return disc.setShow(_DiscState.LIFT, e.target.checked);
+							} }),
+						_react2.default.createElement(_InputGroup2.default, { label: 'Drag', type: 'checkbox', onChange: function onChange(e) {
+								return disc.setShow(_DiscState.DRAG, e.target.checked);
+							} })
+					),
+					_react2.default.createElement(
+						'div',
+						{ className: 'btn-group btn-group-vertical vector-group' },
+						_react2.default.createElement(_InputGroup2.default, { label: 'Total force', type: 'checkbox', onChange: function onChange(e) {
+								return disc.setShow(_DiscState.FORCE, e.target.checked);
+							} }),
+						_react2.default.createElement(_InputGroup2.default, { label: 'Rotation', type: 'checkbox', onChange: function onChange(e) {
+								return disc.setShow(_DiscState.OMEGA, e.target.checked);
+							} }),
+						_react2.default.createElement(_InputGroup2.default, { label: 'Torque * 200', type: 'checkbox', onChange: function onChange(e) {
+								return disc.setShow(_DiscState.TORQUE, e.target.checked);
+							} }),
+						_react2.default.createElement(_InputGroup2.default, { label: 'Axes', type: 'checkbox', onChange: this.showAxes })
+					)
+				),
+				_react2.default.createElement(
+					'div',
+					{ className: 'col-xs-12' },
+					_react2.default.createElement(
+						'button',
+						{ type: 'button', 'class': 'btn btn-success', onClick: this.onThrow },
+						'Throw!'
+					)
 				)
 			);
 		}
@@ -84315,24 +84371,28 @@ var TimeSlider = function (_Component) {
 			return _react2.default.createElement(
 				'div',
 				{ className: 'row' },
-				playing ? _react2.default.createElement(
-					'button',
-					{ type: 'button', onClick: this.onPause, className: 'btn' },
-					_react2.default.createElement('span', { className: 'glyphicon glyphicon-pause', title: 'Pause animation' })
-				) : _react2.default.createElement(
-					'button',
-					{ type: 'button', onClick: this.onPlay, className: 'btn' },
-					_react2.default.createElement('span', { className: 'glyphicon glyphicon-play', title: 'Animate last throw' })
-				),
 				_react2.default.createElement(
-					'span',
-					{ className: 'padded' },
-					_react2.default.createElement('input', { id: 'timeSlider',
-						type: 'text',
-						'data-provide': 'slider',
-						'data-slider-min': '0',
-						'data-slider-step': '0.01',
-						'data-slider-value': '0' })
+					'div',
+					{ className: 'col-xs-12' },
+					playing ? _react2.default.createElement(
+						'button',
+						{ type: 'button', onClick: this.onPause, className: 'btn' },
+						_react2.default.createElement('span', { className: 'glyphicon glyphicon-pause', title: 'Pause animation' })
+					) : _react2.default.createElement(
+						'button',
+						{ type: 'button', onClick: this.onPlay, className: 'btn' },
+						_react2.default.createElement('span', { className: 'glyphicon glyphicon-play', title: 'Animate last throw' })
+					),
+					_react2.default.createElement(
+						'span',
+						{ className: 'padded' },
+						_react2.default.createElement('input', { id: 'timeSlider',
+							type: 'text',
+							'data-provide': 'slider',
+							'data-slider-min': '0',
+							'data-slider-step': '0.01',
+							'data-slider-value': '0' })
+					)
 				)
 			);
 		}

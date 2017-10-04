@@ -2,16 +2,32 @@ import React, { Component } from 'react'
 import InputGroup from 'InputGroup'
 
 
+const vecToState = vec => {
+	if(vec) {
+		return {
+			x: vec.x,
+			y: vec.y,
+			z: vec.z
+		}
+	} else {
+		return {
+			x: 0,
+			y: 0,
+			z: 0
+		}
+	}
+}
+
 class VectorInput extends Component {
 	constructor(props) {
 		super(props)
-		if(props.value) {
-			this.state = {x:props.value.x, y:props.value.y, z:props.value.z}
-		} else {
-			this.state = {x:0, y:0, z:0}
-		}
+		this.state = vecToState(props.value)
 		this.notifyUpdate = this.notifyUpdate.bind(this)
 		this.reset = this.reset.bind(this)
+	}
+
+	componentWillReceiveProps(nextProps) {
+		this.setState(vecToState(nextProps.value))
 	}
 
 	notifyUpdate() {

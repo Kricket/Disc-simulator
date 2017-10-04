@@ -24,11 +24,11 @@ class Interface extends Component {
 
 		return (
 			<div className="container-fluid">
-				<div className="well">
-					<div className="row">
-						<div className="col-xs-12" id="world" style={{height: "700px"}}/>
+				<div className="row">
+					<div className="col-xs-9" id="world" style={{height: "900px"}}/>
+					<div className="col-xs-3">
+						<DiscController disc={disc}/>
 					</div>
-					<DiscController disc={disc}/>
 				</div>
 			</div>
 		)

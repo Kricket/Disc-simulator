@@ -115,7 +115,7 @@ class DiscController extends Component {
 
 		const {calcTime, discState, steps} = this.state
 
-		return <div>
+		return <div className="row">
 				{!!calcTime && <div className="loading-overlay">
 					<h3 className="loading-text">
 						Calculating... {Math.floor(calcTime * 10) / 10}
@@ -124,29 +124,47 @@ class DiscController extends Component {
 
 				{!!steps && <TimeSlider onStep={this.onStep} max={steps[steps.length - 1].time}/>}
 
-				<VectorInput label="Orientation" value={discState[UP]} onChange={up => this.onChange(UP, up)}/>
-				<div className="btn-group btn-group-vertical vector-group">
-					<label>Spin velocity</label>
-					<InputGroup label="Ω" value={discState[OMEGA].length()} onChange={this.onOmegaChange}/>
-					<label>Spin offset (degrees)</label>
-					<InputGroup label="°" onChange={e => this.onChange('SPINOFF', e.target.value)}/>
+				<div className="col-xs-12 col-lg-6">
+					<VectorInput label="Orientation" value={discState[UP]} onChange={up => this.onChange(UP, up)}/>
 				</div>
-				<VectorInput label="Position" value={discState[POS]} onChange={pos => this.onChange(POS, pos)}/>
-				<VectorInput label="Velocity" value={discState[VEL]} onChange={vel => this.onChange(VEL, vel)}/>
+				<div className="col-xs-12 col-lg-6">
+					<div className="btn-group btn-group-vertical vector-group">
+						<label>Spin velocity</label>
+						<InputGroup label="Ω" value={discState[OMEGA].length()} onChange={this.onOmegaChange}/>
+						<label>Spin offset (degrees)</label>
+						<InputGroup label="°" onChange={e => this.onChange('SPINOFF', e.target.value)}/>
+					</div>
+				</div>
 
-				<div className="btn-group btn-group-vertical vector-group">
-					<InputGroup label="Path" type="checkbox" onChange={e => disc.setShow(PATH, e.target.checked)}/>
-					<InputGroup label="Velocity" type="checkbox" onChange={e => disc.setShow(VEL, e.target.checked)}/>
-					<InputGroup label="Lift" type="checkbox" onChange={e => disc.setShow(LIFT, e.target.checked)}/>
-					<InputGroup label="Drag" type="checkbox" onChange={e => disc.setShow(DRAG, e.target.checked)}/>
+				<div className="clearfix"/>
+
+				<div className="col-xs-12 col-lg-6">
+					<VectorInput label="Position" value={discState[POS]} onChange={pos => this.onChange(POS, pos)}/>
 				</div>
-				<div className="btn-group btn-group-vertical vector-group">
-					<InputGroup label="Total force" type="checkbox" onChange={e => disc.setShow(FORCE, e.target.checked)}/>
-					<InputGroup label="Rotation" type="checkbox" onChange={e => disc.setShow(OMEGA, e.target.checked)}/>
-					<InputGroup label="Torque * 200" type="checkbox" onChange={e => disc.setShow(TORQUE, e.target.checked)}/>
-					<InputGroup label="Axes" type="checkbox" onChange={this.showAxes}/>
+				<div className="col-xs-12 col-lg-6">
+					<VectorInput label="Velocity" value={discState[VEL]} onChange={vel => this.onChange(VEL, vel)}/>
 				</div>
-				<button type="button" class="btn btn-success" onClick={this.onThrow}>Throw!</button>
+
+				<div className="clearfix"/>
+
+				<div className="col-xs-12">
+					<div className="btn-group btn-group-vertical vector-group">
+						<InputGroup label="Path" type="checkbox" onChange={e => disc.setShow(PATH, e.target.checked)}/>
+						<InputGroup label="Velocity" type="checkbox" onChange={e => disc.setShow(VEL, e.target.checked)}/>
+						<InputGroup label="Lift" type="checkbox" onChange={e => disc.setShow(LIFT, e.target.checked)}/>
+						<InputGroup label="Drag" type="checkbox" onChange={e => disc.setShow(DRAG, e.target.checked)}/>
+					</div>
+					<div className="btn-group btn-group-vertical vector-group">
+						<InputGroup label="Total force" type="checkbox" onChange={e => disc.setShow(FORCE, e.target.checked)}/>
+						<InputGroup label="Rotation" type="checkbox" onChange={e => disc.setShow(OMEGA, e.target.checked)}/>
+						<InputGroup label="Torque * 200" type="checkbox" onChange={e => disc.setShow(TORQUE, e.target.checked)}/>
+						<InputGroup label="Axes" type="checkbox" onChange={this.showAxes}/>
+					</div>
+				</div>
+
+				<div className="col-xs-12">
+					<button type="button" class="btn btn-success" onClick={this.onThrow}>Throw!</button>
+				</div>
 			</div>
 	}
 }
