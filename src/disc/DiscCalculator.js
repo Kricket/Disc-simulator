@@ -29,9 +29,9 @@ const Iy  = 0.00235; // kg*m^2
 const Ixz = 0.00122; // kg*m^2
 
 // Disc constants
-const FR_MASS	= 0.175;  // kg
-const FR_RADIUS	= 0.1365; // meters
-const FR_HEIGHT	= 0.025;  // meters
+const FR_MASS	        = 0.175;  // kg
+export const FR_RADIUS	= 0.1365; // meters
+export const FR_HEIGHT	= 0.025;  // meters
 
 // Angle of minimum drag and zero lift. Should be ~ -4° = .06981317
 const alpha0  = -CL0 / CLalpha;
@@ -43,10 +43,11 @@ const FR_AREA = Math.PI * FR_RADIUS * FR_RADIUS;
 
 Torque on the disc is generated because the Center of Gravity (COG) is usually
 not the same as the Center of (Aerodynamic) Pressure (COP - the point where the
-aerodynamic forces are applied). In fact, they coincide at 3 angles: PI/2 and
+aerodynamic forces are applied). In fact, they only coincide at 3 angles: PI/2,
 -PI/2 (i.e. velocity is parallel with the disc normal), and alphaS (stable).
 
-I estimate this offset (r) with 4 simple lines (r = m*alpha + b):
+I estimate this offset r (along D1) with 4 simple lines (r = m*alpha + b):
+
      x (nMIDalpha, nCOPmax)
     / \
    /   \ aS      PI/2
@@ -104,15 +105,6 @@ for(var x = -8; x <= 8; x++) {
 */
 /*****************************************************************************/
 
-// Shape of the disc
-export const DISC_CONTOUR = [
-	new THREE.Vector2( 0,                 0                ),
-	new THREE.Vector2( 0.8  * FR_RADIUS,  0                ),
-	new THREE.Vector2( 0.97 * FR_RADIUS, -0.32 * FR_HEIGHT ),
-	new THREE.Vector2( 1.0  * FR_RADIUS, -0.72 * FR_HEIGHT ),
-	new THREE.Vector2( 0.98 * FR_RADIUS, -1.0 * FR_HEIGHT  )
-]
-
 // Floating-point rounding
 const EPSILON = 0.0000000001
 const isZero = x => Math.abs(x) < EPSILON
@@ -139,6 +131,8 @@ class DiscCalculator {
 	}
 
 	// Start the async calculation loop
+	// update: callback(disctime) to update any interested parties on our progress
+	// done: callback(steps) to report the finished array of DiscStates
 	calculate(update, done) {
 		this.steps = [new DiscState(this.state)]
 		const self = this
@@ -180,7 +174,8 @@ class DiscCalculator {
 		const vsq = this.state[VEL].dot(this.state[VEL])
 		const nVel = this.state[VEL].clone().normalize()
 		
-		// alpha = the angle of attack. Positive alpha 
+		// alpha = the angle of attack. Positive alpha is above the plane of the disc
+		// (i.e. probably an upside-down throw)
 		const alpha = isZero(vsq) ? 0 : Math.PI/2 - d3.angleTo(this.state[VEL])
 
 		// Estimate the surface area of the disc facing forward
@@ -235,7 +230,7 @@ class DiscCalculator {
 		// Add in gravity
 		force.y += GRAVITY * FR_MASS
 
-		//--- Rotation ------------------------//
+		//--- Angular -------------------------//
 
 		this.state[TORQUE] = torque.clone().multiplyScalar(200) // Make it bigger so it's more visible
 
@@ -249,11 +244,12 @@ class DiscCalculator {
 		const oNorm = omega.length()
 		if(!isZero(oNorm)) {
 			this.state[UP] = d3.clone().applyAxisAngle(
-				omega.clone().normalize(), oNorm * SIM_DT
+				omega.clone().multiplyScalar(1/oNorm), oNorm * SIM_DT
 			)
 		}
 
 		//--- Linear --------------------------//
+
 		this.state[D1] = d1
 		this.state[D2] = d2
 		this.state[D3] = d3

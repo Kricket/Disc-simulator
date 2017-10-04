@@ -2,7 +2,6 @@ import 'three/examples/js/controls/OrbitControls'
 
 class World {
 	constructor(worldElement) {
-		this.lastTime = 0
 		this.init(worldElement)
 	}
 
@@ -30,25 +29,9 @@ class World {
 		const animate = (time) => {
 			requestAnimationFrame(animate)
 			self.renderer.render(self.scene, self.camera)
-			if(self.ticker) {
-				self.ticker(time)
-			}
-			self.lastTime = time
 		}
 
 		requestAnimationFrame(animate)
-	}
-
-	addTicker(callback) {
-		this.ticker = callback
-	}
-
-	clearTicker() {
-		this.ticker = undefined
-	}
-
-	getLastTime() {
-		return this.lastTime
 	}
 }
 

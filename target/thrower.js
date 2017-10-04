@@ -59,7 +59,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "49eb208644e6d629a404"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "072c044c41ddadf41b5b"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
@@ -62228,8 +62228,6 @@ var _DRAWABLE_VECTORS;
 
 var _DiscCalculator = __webpack_require__(91);
 
-var _DiscCalculator2 = _interopRequireDefault(_DiscCalculator);
-
 var _DiscState = __webpack_require__(25);
 
 var _DiscState2 = _interopRequireDefault(_DiscState);
@@ -62245,9 +62243,11 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 // Draw the path of the disc
 var PATH = exports.PATH = 'path';
 
-var DISC_POINTS = [new THREE.Vector2(0, 0), new THREE.Vector2(0.15, 0), new THREE.Vector2(0.2, -0.005), new THREE.Vector2(0.23, -0.007), new THREE.Vector2(0.25, -0.01), new THREE.Vector2(0.24, -0.02)];
+// Shape of the disc
+var DISC_CONTOUR = [new THREE.Vector2(0, 0), new THREE.Vector2(0.8 * _DiscCalculator.FR_RADIUS, 0), new THREE.Vector2(0.97 * _DiscCalculator.FR_RADIUS, -0.32 * _DiscCalculator.FR_HEIGHT), new THREE.Vector2(1.0 * _DiscCalculator.FR_RADIUS, -0.72 * _DiscCalculator.FR_HEIGHT), new THREE.Vector2(0.98 * _DiscCalculator.FR_RADIUS, -1.0 * _DiscCalculator.FR_HEIGHT)];
 
 var VY = new THREE.Vector3(0, 1, 0);
+
 // Vectors that can be drawn, and their colors
 var DRAWABLE_VECTORS = (_DRAWABLE_VECTORS = {}, _defineProperty(_DRAWABLE_VECTORS, _DiscState.LIFT, 0x00AA50), _defineProperty(_DRAWABLE_VECTORS, _DiscState.DRAG, 0xAA0050), _defineProperty(_DRAWABLE_VECTORS, _DiscState.FORCE, 0xFF00FF), _defineProperty(_DRAWABLE_VECTORS, _DiscState.VEL, 0x808080), _defineProperty(_DRAWABLE_VECTORS, _DiscState.D1, 0xFF0000), _defineProperty(_DRAWABLE_VECTORS, _DiscState.D2, 0x00FF00), _defineProperty(_DRAWABLE_VECTORS, _DiscState.D3, 0x0000FF), _defineProperty(_DRAWABLE_VECTORS, _DiscState.OMEGA, 0x4080B0), _defineProperty(_DRAWABLE_VECTORS, _DiscState.TORQUE, 0xB08040), _DRAWABLE_VECTORS);
 
@@ -62273,6 +62273,10 @@ var moveLine = function moveLine(line, a, b) {
 	line.geometry.computeBoundingSphere();
 };
 
+/**
+ * Class for drawing the disc (and related disc state stuff)
+ */
+
 var Disc = function () {
 	function Disc(scene) {
 		_classCallCheck(this, Disc);
@@ -62280,28 +62284,25 @@ var Disc = function () {
 		this.show = {};
 		this.scene = scene;
 
-		this.initialState = new _DiscState2.default();
-		this.currentState = this.initialState;
+		this.currentState = new _DiscState2.default();
 		this.createDiscMesh();
 	}
 
 	_createClass(Disc, [{
-		key: 'setInitial',
-		value: function setInitial(key, value) {
-			this.initialState[key] = value;
-			this.gotoInitialState();
-		}
-	}, {
 		key: 'setShow',
-		value: function setShow(show) {
-			this.show[show] = !this.show[show];
-			if (this.steps) {
-				this.showOrHideExtras();
-			}
+		value: function setShow(type, shown) {
+			this.show[type] = !!shown;
+			this.showOrHideExtras();
 		}
 	}, {
-		key: 'gotoState',
-		value: function gotoState(state) {
+		key: 'setSteps',
+		value: function setSteps(steps) {
+			this.steps = steps;
+			this.showOrHidePath();
+		}
+	}, {
+		key: 'setState',
+		value: function setState(state) {
 			var _this = this;
 
 			this.currentState = state;
@@ -62312,29 +62313,6 @@ var Disc = function () {
 				return _this.moveVector(v);
 			});
 		}
-	}, {
-		key: 'gotoInitialState',
-		value: function gotoInitialState() {
-			this.gotoState(this.initialState);
-			this.steps = null;
-		}
-	}, {
-		key: 'throw',
-		value: function _throw(update, done) {
-			this.gotoInitialState();
-			var self = this;
-			var calc = new _DiscCalculator2.default(this.initialState);
-			calc.calculate(update, function (steps) {
-				self.steps = steps;
-				self.showOrHideExtras();
-				done(steps);
-			});
-		}
-	}, {
-		key: 'getSteps',
-		value: function getSteps() {
-			return this.steps;
-		}
 
 		// Show/hide optional stuff
 
@@ -62343,20 +62321,24 @@ var Disc = function () {
 		value: function showOrHideExtras() {
 			var _this2 = this;
 
-			if (this.show[PATH]) {
-				this.createPath();
-			} else {
-				this.hidePath();
-			}
-
+			this.showOrHidePath();
 			Object.keys(DRAWABLE_VECTORS).forEach(function (v) {
 				return _this2.createOrHideVector(v);
 			});
 		}
 	}, {
+		key: 'showOrHidePath',
+		value: function showOrHidePath() {
+			if (this.show[PATH]) {
+				this.createPath();
+			} else {
+				this.hidePath();
+			}
+		}
+	}, {
 		key: 'createDiscMesh',
 		value: function createDiscMesh() {
-			var geometry = new THREE.LatheGeometry(_DiscCalculator.DISC_CONTOUR, 72);
+			var geometry = new THREE.LatheGeometry(DISC_CONTOUR, 72);
 			geometry.faces.forEach(function (face) {
 				return face.materialIndex = Math.floor(Math.random() * 100);
 			});
@@ -62386,6 +62368,9 @@ var Disc = function () {
 			this.hidePath();
 			var steps = this.steps;
 
+			if (!steps) {
+				return;
+			}
 
 			var geom = new THREE.BufferGeometry();
 			var material = new THREE.LineBasicMaterial({
@@ -65915,7 +65900,7 @@ $('body').append('<div id="root"></div>');
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/* WEBPACK VAR INJECTION */(function($, THREE) {
+
 
 Object.defineProperty(exports, "__esModule", {
 	value: true
@@ -65939,124 +65924,17 @@ var _Disc = __webpack_require__(55);
 
 var _Disc2 = _interopRequireDefault(_Disc);
 
-var _DiscControls = __webpack_require__(92);
+var _DiscController = __webpack_require__(200);
 
-var _DiscControls2 = _interopRequireDefault(_DiscControls);
-
-var _DiscState = __webpack_require__(25);
+var _DiscController2 = _interopRequireDefault(_DiscController);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-// Helper used to create video-like controls for the movement of the disc
-var Ticker = function () {
-	function Ticker(world, disc, slider, onDone, onTick) {
-		_classCallCheck(this, Ticker);
-
-		this.world = world;
-		this.disc = disc;
-		this.slider = slider;
-		this.onDone = onDone;
-		this.onTick = onTick;
-
-		this.__tick = this.__tick.bind(this);
-		this.onSlide = this.onSlide.bind(this);
-
-		this.elapsedTime = 0;
-		this.stepIdx = 0;
-	}
-
-	// Private tick callback
-
-
-	_createClass(Ticker, [{
-		key: '__tick',
-		value: function __tick(time) {
-			// First, set the time and move the slider...
-			var dt = (time - this.lastTime) * 0.001;
-			this.elapsedTime += dt;
-			this.slider.slider('setValue', this.elapsedTime);
-			this.lastTime = time;
-
-			// ...then, set the step and move the disc.
-			var steps = this.disc.getSteps();
-			var step = steps[this.stepIdx];
-			while (this.stepIdx < steps.length && this.elapsedTime > steps[this.stepIdx].time) {
-				step = steps[this.stepIdx++];
-			}
-
-			if (step) {
-				this.disc.gotoState(step);
-			}
-
-			if (this.stepIdx === steps.length) {
-				this.stop();
-			}
-
-			if (this.onTick) {
-				this.onTick(step);
-			}
-		}
-	}, {
-		key: 'play',
-		value: function play() {
-			if (!this.paused) {
-				this.elapsedTime = 0;
-				this.stepIdx = 0;
-			} else {
-				this.paused = false;
-			}
-
-			this.lastTime = this.world.getLastTime();
-			this.world.addTicker(this.__tick);
-		}
-	}, {
-		key: 'stop',
-		value: function stop() {
-			this.world.clearTicker();
-			this.onDone();
-		}
-	}, {
-		key: 'togglePause',
-		value: function togglePause() {
-			if (this.paused) {
-				this.play();
-			} else {
-				this.world.clearTicker();
-				this.paused = true;
-			}
-		}
-
-		// Callback when the user drags the slider
-
-	}, {
-		key: 'onSlide',
-		value: function onSlide(time) {
-			var steps = this.disc.getSteps();
-			// Find which step to display
-			var idx = steps.findIndex(function (step) {
-				return step.time >= time;
-			});
-
-			this.stepIdx = idx < 0 ? 0 : idx >= steps.length ? steps.length - 1 : idx;
-			var step = steps[this.stepIdx];
-
-			this.elapsedTime = step.time;
-			this.disc.gotoState(step);
-
-			this.paused = true;
-		}
-	}]);
-
-	return Ticker;
-}();
 
 var Vector = function Vector(_ref) {
 	var vec = _ref.vec,
@@ -66099,111 +65977,18 @@ var Interface = function (_Component) {
 		var _this = _possibleConstructorReturn(this, (Interface.__proto__ || Object.getPrototypeOf(Interface)).call(this, props));
 
 		_this.state = {};
-		_this.onPlay = _this.onPlay.bind(_this);
-		_this.onDone = _this.onDone.bind(_this);
-		_this.onPause = _this.onPause.bind(_this);
-		_this.onThrow = _this.onThrow.bind(_this);
-		_this.onTick = _this.onTick.bind(_this);
-		_this.onChangeDiscInit = _this.onChangeDiscInit.bind(_this);
-		_this.onShowDiscExtra = _this.onShowDiscExtra.bind(_this);
 		return _this;
 	}
 
-	// Callback for the "play" button
-
-
 	_createClass(Interface, [{
-		key: 'onPlay',
-		value: function onPlay() {
-			this.setState({ playing: true });
-			this.ticker.play();
-		}
-
-		// Callback for when the ticker has reached the end of the animation
-
-	}, {
-		key: 'onDone',
-		value: function onDone() {
-			this.setState({ playing: false });
-		}
-
-		// Callback for the "pause" button. Stop playing, but don't lose your place
-
-	}, {
-		key: 'onPause',
-		value: function onPause() {
-			if (this.state.playing) {
-				this.ticker.togglePause();
-			}
-		}
-
-		// Stop the animation immediately
-
-	}, {
-		key: 'stop',
-		value: function stop() {
-			this.ticker.stop();
-			this.setState({ playing: false });
-		}
-
-		// Calculate the throw, and setup the "video player" with the result
-
-	}, {
-		key: 'onThrow',
-		value: function onThrow() {
-			this.stop();
-			var self = this;
-
-			this.disc.throw(function (calcTime) {
-				self.setState({ calcTime: calcTime });
-			}, function (steps) {
-				var lastStep = steps[steps.length - 1];
-				var slider = $('#timeSlider');
-				slider.slider('off', 'slide', self.ticker.onSlide);
-
-				self.setState({ maxTime: lastStep.time, calcTime: 0 });
-				slider.slider('setAttribute', 'max', lastStep.time).slider('on', 'slide', self.ticker.onSlide);
-			});
-		}
-	}, {
-		key: 'onChangeDiscInit',
-		value: function onChangeDiscInit(comp, val) {
-			this.disc.setInitial(comp, new (Function.prototype.bind.apply(THREE.Vector3, [null].concat(_toConsumableArray(val))))());
-		}
-	}, {
-		key: 'onShowDiscExtra',
-		value: function onShowDiscExtra(key, val) {
-			this.disc.setShow(key, val);
-		}
-	}, {
-		key: 'onTick',
-		value: function onTick(discState) {
-			this.setState({ discState: discState });
-		}
-	}, {
 		key: 'render',
 		value: function render() {
-			var _state = this.state,
-			    playing = _state.playing,
-			    maxTime = _state.maxTime,
-			    calcTime = _state.calcTime,
-			    discState = _state.discState,
-			    worldExists = _state.worldExists;
+			var disc = this.state.disc;
 
 
 			return _react2.default.createElement(
 				'div',
 				{ className: 'container-fluid' },
-				!!calcTime && _react2.default.createElement(
-					'div',
-					{ className: 'loading-overlay' },
-					_react2.default.createElement(
-						'h3',
-						{ className: 'loading-text' },
-						'Calculating... ',
-						Math.floor(calcTime * 10) / 10
-					)
-				),
 				_react2.default.createElement(
 					'div',
 					{ className: 'well' },
@@ -66212,31 +65997,7 @@ var Interface = function (_Component) {
 						{ className: 'row' },
 						_react2.default.createElement('div', { className: 'col-xs-12', id: 'world', style: { height: "700px" } })
 					),
-					_react2.default.createElement(
-						'div',
-						{ className: "row" + (maxTime ? "" : " nodisplay") },
-						playing ? _react2.default.createElement(
-							'button',
-							{ type: 'button', onClick: this.onPause, className: 'btn' },
-							_react2.default.createElement('span', { className: 'glyphicon glyphicon-pause', title: 'Pause animation' })
-						) : _react2.default.createElement(
-							'button',
-							{ type: 'button', onClick: this.onPlay, className: 'btn' },
-							_react2.default.createElement('span', { className: 'glyphicon glyphicon-play', title: 'Animate last throw' })
-						),
-						_react2.default.createElement(
-							'span',
-							{ className: 'padded' },
-							_react2.default.createElement('input', { id: 'timeSlider',
-								type: 'text',
-								'data-provide': 'slider',
-								'data-slider-min': '0',
-								'data-slider-step': '0.01',
-								'data-slider-value': '0' })
-						)
-					),
-					!!worldExists && _react2.default.createElement(_DiscControls2.default, { disc: this.disc, onThrow: this.onThrow }),
-					_react2.default.createElement(Vector, { label: 'lift', vec: discState ? discState.lift : null })
+					_react2.default.createElement(_DiscController2.default, { disc: disc })
 				)
 			);
 		}
@@ -66248,9 +66009,8 @@ var Interface = function (_Component) {
 
 			this.disc = new _Disc2.default(scene);
 			this.field = new _Field2.default(scene);
-			this.ticker = new Ticker(this.world, this.disc, $('#timeSlider'), this.onDone, this.onTick);
 
-			this.setState({ worldExists: true });
+			this.setState({ disc: this.disc });
 		}
 	}]);
 
@@ -66258,7 +66018,6 @@ var Interface = function (_Component) {
 }(_react.Component);
 
 exports.default = Interface;
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(18), __webpack_require__(11)))
 
 /***/ }),
 /* 90 */
@@ -66385,7 +66144,7 @@ exports.default = VectorInput;
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.DISC_CONTOUR = undefined;
+exports.FR_HEIGHT = exports.FR_RADIUS = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -66425,8 +66184,8 @@ var Ixz = 0.00122; // kg*m^2
 
 // Disc constants
 var FR_MASS = 0.175; // kg
-var FR_RADIUS = 0.1365; // meters
-var FR_HEIGHT = 0.025; // meters
+var FR_RADIUS = exports.FR_RADIUS = 0.1365; // meters
+var FR_HEIGHT = exports.FR_HEIGHT = 0.025; // meters
 
 // Angle of minimum drag and zero lift. Should be ~ -4° = .06981317
 var alpha0 = -CL0 / CLalpha;
@@ -66438,10 +66197,11 @@ var FR_AREA = Math.PI * FR_RADIUS * FR_RADIUS;
 
 Torque on the disc is generated because the Center of Gravity (COG) is usually
 not the same as the Center of (Aerodynamic) Pressure (COP - the point where the
-aerodynamic forces are applied). In fact, they coincide at 3 angles: PI/2 and
+aerodynamic forces are applied). In fact, they only coincide at 3 angles: PI/2,
 -PI/2 (i.e. velocity is parallel with the disc normal), and alphaS (stable).
 
-I estimate this offset (r) with 4 simple lines (r = m*alpha + b):
+I estimate this offset r (along D1) with 4 simple lines (r = m*alpha + b):
+
      x (nMIDalpha, nCOPmax)
     / \
    /   \ aS      PI/2
@@ -66499,9 +66259,6 @@ for(var x = -8; x <= 8; x++) {
 */
 /*****************************************************************************/
 
-// Shape of the disc
-var DISC_CONTOUR = exports.DISC_CONTOUR = [new THREE.Vector2(0, 0), new THREE.Vector2(0.8 * FR_RADIUS, 0), new THREE.Vector2(0.97 * FR_RADIUS, -0.32 * FR_HEIGHT), new THREE.Vector2(1.0 * FR_RADIUS, -0.72 * FR_HEIGHT), new THREE.Vector2(0.98 * FR_RADIUS, -1.0 * FR_HEIGHT)];
-
 // Floating-point rounding
 var EPSILON = 0.0000000001;
 var isZero = function isZero(x) {
@@ -66535,6 +66292,8 @@ var DiscCalculator = function () {
 	}
 
 	// Start the async calculation loop
+	// update: callback(disctime) to update any interested parties on our progress
+	// done: callback(steps) to report the finished array of DiscStates
 
 
 	_createClass(DiscCalculator, [{
@@ -66585,7 +66344,8 @@ var DiscCalculator = function () {
 			var vsq = this.state[_DiscState.VEL].dot(this.state[_DiscState.VEL]);
 			var nVel = this.state[_DiscState.VEL].clone().normalize();
 
-			// alpha = the angle of attack. Positive alpha 
+			// alpha = the angle of attack. Positive alpha is above the plane of the disc
+			// (i.e. probably an upside-down throw)
 			var alpha = isZero(vsq) ? 0 : Math.PI / 2 - d3.angleTo(this.state[_DiscState.VEL]);
 
 			// Estimate the surface area of the disc facing forward
@@ -66631,7 +66391,7 @@ var DiscCalculator = function () {
 			// Add in gravity
 			force.y += GRAVITY * FR_MASS;
 
-			//--- Rotation ------------------------//
+			//--- Angular -------------------------//
 
 			this.state[_DiscState.TORQUE] = torque.clone().multiplyScalar(200); // Make it bigger so it's more visible
 
@@ -66644,10 +66404,11 @@ var DiscCalculator = function () {
 			// Rotate d3 around omega
 			var oNorm = omega.length();
 			if (!isZero(oNorm)) {
-				this.state[_DiscState.UP] = d3.clone().applyAxisAngle(omega.clone().normalize(), oNorm * SIM_DT);
+				this.state[_DiscState.UP] = d3.clone().applyAxisAngle(omega.clone().multiplyScalar(1 / oNorm), oNorm * SIM_DT);
 			}
 
 			//--- Linear --------------------------//
+
 			this.state[_DiscState.D1] = d1;
 			this.state[_DiscState.D2] = d2;
 			this.state[_DiscState.D3] = d3;
@@ -66673,168 +66434,7 @@ exports.default = DiscCalculator;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11)))
 
 /***/ }),
-/* 92 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(THREE) {
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _react = __webpack_require__(24);
-
-var _react2 = _interopRequireDefault(_react);
-
-var _VectorInput = __webpack_require__(90);
-
-var _VectorInput2 = _interopRequireDefault(_VectorInput);
-
-var _InputGroup = __webpack_require__(54);
-
-var _InputGroup2 = _interopRequireDefault(_InputGroup);
-
-var _DiscState = __webpack_require__(25);
-
-var _Disc = __webpack_require__(55);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var DiscControls = function (_Component) {
-	_inherits(DiscControls, _Component);
-
-	function DiscControls(props) {
-		_classCallCheck(this, DiscControls);
-
-		var _this = _possibleConstructorReturn(this, (DiscControls.__proto__ || Object.getPrototypeOf(DiscControls)).call(this, props));
-
-		_this.onChange = _this.onChange.bind(_this);
-		_this.onShow = _this.onShow.bind(_this);
-		_this.showAxes = _this.showAxes.bind(_this);
-		return _this;
-	}
-
-	_createClass(DiscControls, [{
-		key: 'onChange',
-		value: function onChange(comp, val) {
-			this.props.disc.setInitial(comp, new (Function.prototype.bind.apply(THREE.Vector3, [null].concat(_toConsumableArray(val))))());
-		}
-	}, {
-		key: 'onOmegaChange',
-		value: function onOmegaChange(val) {
-			var disc = this.props.disc;
-
-			disc.setInitial(_DiscState.OMEGA, disc.initialState[_DiscState.UP].clone().multiplyScalar(val));
-		}
-	}, {
-		key: 'onShow',
-		value: function onShow(key, val) {
-			this.props.disc.setShow(key, val);
-		}
-	}, {
-		key: 'showAxes',
-		value: function showAxes(e) {
-			var checked = !!e.target.checked;
-			this.onShow(_DiscState.D1, checked);
-			this.onShow(_DiscState.D2, checked);
-			this.onShow(_DiscState.D3, checked);
-		}
-	}, {
-		key: 'render',
-		value: function render() {
-			var _this2 = this;
-
-			var onThrow = this.props.onThrow;
-
-			return _react2.default.createElement(
-				'div',
-				null,
-				_react2.default.createElement(_VectorInput2.default, { label: 'Orientation', onChange: function onChange(up) {
-						return _this2.onChange(_DiscState.UP, up);
-					} }),
-				_react2.default.createElement(
-					'div',
-					{ className: 'btn-group btn-group-vertical vector-group' },
-					_react2.default.createElement(
-						'label',
-						null,
-						'Spin velocity'
-					),
-					_react2.default.createElement(_InputGroup2.default, { label: '\u03A9', value: this.props.disc.initialState[_DiscState.OMEGA].length(), onChange: function onChange(e) {
-							return _this2.onOmegaChange(e.target.value);
-						} }),
-					_react2.default.createElement(
-						'label',
-						null,
-						'Spin offset (degrees)'
-					),
-					_react2.default.createElement(_InputGroup2.default, { label: '\xB0', onChange: function onChange(e) {
-							return _this2.onChange('SPINOFF', e.target.value);
-						} })
-				),
-				_react2.default.createElement(_VectorInput2.default, { label: 'Position', onChange: function onChange(pos) {
-						return _this2.onChange(_DiscState.POS, pos);
-					} }),
-				_react2.default.createElement(_VectorInput2.default, { label: 'Velocity', onChange: function onChange(vel) {
-						return _this2.onChange(_DiscState.VEL, vel);
-					} }),
-				_react2.default.createElement(
-					'div',
-					{ className: 'btn-group btn-group-vertical vector-group' },
-					_react2.default.createElement(_InputGroup2.default, { label: 'Path', type: 'checkbox', onChange: function onChange(e) {
-							return _this2.onShow(_Disc.PATH, e.target.checked);
-						} }),
-					_react2.default.createElement(_InputGroup2.default, { label: 'Velocity', type: 'checkbox', onChange: function onChange(e) {
-							return _this2.onShow(_DiscState.VEL, e.target.checked);
-						} }),
-					_react2.default.createElement(_InputGroup2.default, { label: 'Lift', type: 'checkbox', onChange: function onChange(e) {
-							return _this2.onShow(_DiscState.LIFT, e.target.checked);
-						} }),
-					_react2.default.createElement(_InputGroup2.default, { label: 'Drag', type: 'checkbox', onChange: function onChange(e) {
-							return _this2.onShow(_DiscState.DRAG, e.target.checked);
-						} })
-				),
-				_react2.default.createElement(
-					'div',
-					{ className: 'btn-group btn-group-vertical vector-group' },
-					_react2.default.createElement(_InputGroup2.default, { label: 'Total force', type: 'checkbox', onChange: function onChange(e) {
-							return _this2.onShow(_DiscState.FORCE, e.target.checked);
-						} }),
-					_react2.default.createElement(_InputGroup2.default, { label: 'Rotation', type: 'checkbox', onChange: function onChange(e) {
-							return _this2.onShow(_DiscState.OMEGA, e.target.checked);
-						} }),
-					_react2.default.createElement(_InputGroup2.default, { label: 'Torque * 200', type: 'checkbox', onChange: function onChange(e) {
-							return _this2.onShow(_DiscState.TORQUE, e.target.checked);
-						} }),
-					_react2.default.createElement(_InputGroup2.default, { label: 'Axes', type: 'checkbox', onChange: this.showAxes })
-				),
-				_react2.default.createElement(
-					'button',
-					{ type: 'button', 'class': 'btn btn-success', onClick: onThrow },
-					'Throw!'
-				)
-			);
-		}
-	}]);
-
-	return DiscControls;
-}(_react.Component);
-
-exports.default = DiscControls;
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11)))
-
-/***/ }),
+/* 92 */,
 /* 93 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -66916,7 +66516,6 @@ var World = function () {
 	function World(worldElement) {
 		_classCallCheck(this, World);
 
-		this.lastTime = 0;
 		this.init(worldElement);
 	}
 
@@ -66947,28 +66546,9 @@ var World = function () {
 			var animate = function animate(time) {
 				requestAnimationFrame(animate);
 				self.renderer.render(self.scene, self.camera);
-				if (self.ticker) {
-					self.ticker(time);
-				}
-				self.lastTime = time;
 			};
 
 			requestAnimationFrame(animate);
-		}
-	}, {
-		key: 'addTicker',
-		value: function addTicker(callback) {
-			this.ticker = callback;
-		}
-	}, {
-		key: 'clearTicker',
-		value: function clearTicker() {
-			this.ticker = undefined;
-		}
-	}, {
-		key: 'getLastTime',
-		value: function getLastTime() {
-			return this.lastTime;
 		}
 	}]);
 
@@ -84233,6 +83813,539 @@ module.exports = "data:application/font-woff2;base64,d09GMgABAAAAAEZsAA8AAAAAsVw
 
 module.exports = __webpack_require__(88);
 
+
+/***/ }),
+/* 199 */,
+/* 200 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(THREE) {
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = __webpack_require__(24);
+
+var _react2 = _interopRequireDefault(_react);
+
+var _propTypes = __webpack_require__(202);
+
+var _propTypes2 = _interopRequireDefault(_propTypes);
+
+var _TimeSlider = __webpack_require__(203);
+
+var _TimeSlider2 = _interopRequireDefault(_TimeSlider);
+
+var _VectorInput = __webpack_require__(90);
+
+var _VectorInput2 = _interopRequireDefault(_VectorInput);
+
+var _InputGroup = __webpack_require__(54);
+
+var _InputGroup2 = _interopRequireDefault(_InputGroup);
+
+var _DiscState = __webpack_require__(25);
+
+var _DiscState2 = _interopRequireDefault(_DiscState);
+
+var _Disc = __webpack_require__(55);
+
+var _DiscCalculator = __webpack_require__(91);
+
+var _DiscCalculator2 = _interopRequireDefault(_DiscCalculator);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+/**
+ * Coordinates between the UI controls and the actual Disc object that is displayed.
+ */
+var DiscController = function (_Component) {
+	_inherits(DiscController, _Component);
+
+	function DiscController(props) {
+		_classCallCheck(this, DiscController);
+
+		var _this = _possibleConstructorReturn(this, (DiscController.__proto__ || Object.getPrototypeOf(DiscController)).call(this, props));
+
+		_this.state = {
+			discState: new _DiscState2.default()
+		};
+
+		_this.onThrow = _this.onThrow.bind(_this);
+		_this.onOmegaChange = _this.onOmegaChange.bind(_this);
+		_this.calcProgress = _this.calcProgress.bind(_this);
+		_this.calcFinished = _this.calcFinished.bind(_this);
+		_this.showAxes = _this.showAxes.bind(_this);
+		_this.onStep = _this.onStep.bind(_this);
+		return _this;
+	}
+
+	_createClass(DiscController, [{
+		key: 'componentWillReceiveProps',
+		value: function componentWillReceiveProps(nextProps) {
+			if (nextProps.disc) {
+				nextProps.disc.setState(this.state.discState);
+			}
+		}
+	}, {
+		key: 'setDiscState',
+		value: function setDiscState(discState) {
+			this.setState({
+				discState: discState,
+				steps: null
+			});
+			this.props.disc.setSteps(null);
+			this.props.disc.setState(discState);
+		}
+	}, {
+		key: 'onChange',
+		value: function onChange(comp, val) {
+			var vec = new (Function.prototype.bind.apply(THREE.Vector3, [null].concat(_toConsumableArray(val))))();
+			var discState = new _DiscState2.default(this.state.discState);
+
+			if (comp === _DiscState.UP) {
+				vec.normalize();
+				discState[_DiscState.OMEGA] = vec.clone().multiplyScalar(discState[_DiscState.OMEGA].length());
+			}
+
+			discState[comp] = vec;
+			this.setDiscState(discState);
+		}
+	}, {
+		key: 'onOmegaChange',
+		value: function onOmegaChange(e) {
+			var discState = new _DiscState2.default(this.state.discState);
+			discState[_DiscState.OMEGA] = discState[_DiscState.UP].clone().multiplyScalar(e.target.value);
+			this.setDiscState(discState);
+		}
+	}, {
+		key: 'showAxes',
+		value: function showAxes(e) {
+			var checked = !!e.target.checked;
+			var disc = this.props.disc;
+
+			disc.setShow(_DiscState.D1, checked);
+			disc.setShow(_DiscState.D2, checked);
+			disc.setShow(_DiscState.D3, checked);
+		}
+	}, {
+		key: 'onThrow',
+		value: function onThrow() {
+			this.setState({ steps: null });
+			this.props.disc.setSteps(null);
+
+			var calc = new _DiscCalculator2.default(this.state.discState);
+			calc.calculate(this.calcProgress, this.calcFinished);
+		}
+	}, {
+		key: 'calcProgress',
+		value: function calcProgress(calcTime) {
+			this.setState({ calcTime: calcTime });
+		}
+	}, {
+		key: 'calcFinished',
+		value: function calcFinished(steps) {
+			this.setState({
+				calcTime: null,
+				steps: steps
+			});
+
+			this.props.disc.setSteps(steps);
+		}
+	}, {
+		key: 'onStep',
+		value: function onStep(time) {
+			var steps = this.state.steps;
+
+
+			if (this.stepIdx && time >= steps[this.stepIdx].time) {
+				// We were stepping before. Resume.
+				var step = steps[this.stepIdx];
+				while (this.stepIdx < steps.length && time > step.time) {
+					step = steps[this.stepIdx++];
+				}
+
+				this.props.disc.setState(step);
+			} else {
+				// Jump to the given time
+				var _step = steps.find(function (s) {
+					return time <= s.time;
+				});
+				this.props.disc.setState(_step ? _step : time ? steps[steps.length - 1] : steps[0]);
+			}
+		}
+	}, {
+		key: 'render',
+		value: function render() {
+			var _this2 = this;
+
+			var disc = this.props.disc;
+
+			if (!disc) {
+				return _react2.default.createElement('div', null);
+			}
+
+			var _state = this.state,
+			    calcTime = _state.calcTime,
+			    discState = _state.discState,
+			    steps = _state.steps;
+
+
+			return _react2.default.createElement(
+				'div',
+				null,
+				!!calcTime && _react2.default.createElement(
+					'div',
+					{ className: 'loading-overlay' },
+					_react2.default.createElement(
+						'h3',
+						{ className: 'loading-text' },
+						'Calculating... ',
+						Math.floor(calcTime * 10) / 10
+					)
+				),
+				!!steps && _react2.default.createElement(_TimeSlider2.default, { onStep: this.onStep, max: steps[steps.length - 1].time }),
+				_react2.default.createElement(_VectorInput2.default, { label: 'Orientation', value: discState[_DiscState.UP], onChange: function onChange(up) {
+						return _this2.onChange(_DiscState.UP, up);
+					} }),
+				_react2.default.createElement(
+					'div',
+					{ className: 'btn-group btn-group-vertical vector-group' },
+					_react2.default.createElement(
+						'label',
+						null,
+						'Spin velocity'
+					),
+					_react2.default.createElement(_InputGroup2.default, { label: '\u03A9', value: discState[_DiscState.OMEGA].length(), onChange: this.onOmegaChange }),
+					_react2.default.createElement(
+						'label',
+						null,
+						'Spin offset (degrees)'
+					),
+					_react2.default.createElement(_InputGroup2.default, { label: '\xB0', onChange: function onChange(e) {
+							return _this2.onChange('SPINOFF', e.target.value);
+						} })
+				),
+				_react2.default.createElement(_VectorInput2.default, { label: 'Position', value: discState[_DiscState.POS], onChange: function onChange(pos) {
+						return _this2.onChange(_DiscState.POS, pos);
+					} }),
+				_react2.default.createElement(_VectorInput2.default, { label: 'Velocity', value: discState[_DiscState.VEL], onChange: function onChange(vel) {
+						return _this2.onChange(_DiscState.VEL, vel);
+					} }),
+				_react2.default.createElement(
+					'div',
+					{ className: 'btn-group btn-group-vertical vector-group' },
+					_react2.default.createElement(_InputGroup2.default, { label: 'Path', type: 'checkbox', onChange: function onChange(e) {
+							return disc.setShow(_Disc.PATH, e.target.checked);
+						} }),
+					_react2.default.createElement(_InputGroup2.default, { label: 'Velocity', type: 'checkbox', onChange: function onChange(e) {
+							return disc.setShow(_DiscState.VEL, e.target.checked);
+						} }),
+					_react2.default.createElement(_InputGroup2.default, { label: 'Lift', type: 'checkbox', onChange: function onChange(e) {
+							return disc.setShow(_DiscState.LIFT, e.target.checked);
+						} }),
+					_react2.default.createElement(_InputGroup2.default, { label: 'Drag', type: 'checkbox', onChange: function onChange(e) {
+							return disc.setShow(_DiscState.DRAG, e.target.checked);
+						} })
+				),
+				_react2.default.createElement(
+					'div',
+					{ className: 'btn-group btn-group-vertical vector-group' },
+					_react2.default.createElement(_InputGroup2.default, { label: 'Total force', type: 'checkbox', onChange: function onChange(e) {
+							return disc.setShow(_DiscState.FORCE, e.target.checked);
+						} }),
+					_react2.default.createElement(_InputGroup2.default, { label: 'Rotation', type: 'checkbox', onChange: function onChange(e) {
+							return disc.setShow(_DiscState.OMEGA, e.target.checked);
+						} }),
+					_react2.default.createElement(_InputGroup2.default, { label: 'Torque * 200', type: 'checkbox', onChange: function onChange(e) {
+							return disc.setShow(_DiscState.TORQUE, e.target.checked);
+						} }),
+					_react2.default.createElement(_InputGroup2.default, { label: 'Axes', type: 'checkbox', onChange: this.showAxes })
+				),
+				_react2.default.createElement(
+					'button',
+					{ type: 'button', 'class': 'btn btn-success', onClick: this.onThrow },
+					'Throw!'
+				)
+			);
+		}
+	}]);
+
+	return DiscController;
+}(_react.Component);
+
+DiscController.propTypes = {
+	disc: _propTypes2.default.object
+};
+
+exports.default = DiscController;
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11)))
+
+/***/ }),
+/* 201 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/**
+ * Copyright 2013-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ */
+
+
+
+var emptyFunction = __webpack_require__(6);
+var invariant = __webpack_require__(0);
+var ReactPropTypesSecret = __webpack_require__(112);
+
+module.exports = function() {
+  function shim(props, propName, componentName, location, propFullName, secret) {
+    if (secret === ReactPropTypesSecret) {
+      // It is still safe when called from React.
+      return;
+    }
+    invariant(
+      false,
+      'Calling PropTypes validators directly is not supported by the `prop-types` package. ' +
+      'Use PropTypes.checkPropTypes() to call them. ' +
+      'Read more at http://fb.me/use-check-prop-types'
+    );
+  };
+  shim.isRequired = shim;
+  function getShim() {
+    return shim;
+  };
+  // Important!
+  // Keep this list in sync with production version in `./factoryWithTypeCheckers.js`.
+  var ReactPropTypes = {
+    array: shim,
+    bool: shim,
+    func: shim,
+    number: shim,
+    object: shim,
+    string: shim,
+    symbol: shim,
+
+    any: shim,
+    arrayOf: getShim,
+    element: shim,
+    instanceOf: getShim,
+    node: shim,
+    objectOf: getShim,
+    oneOf: getShim,
+    oneOfType: getShim,
+    shape: getShim
+  };
+
+  ReactPropTypes.checkPropTypes = emptyFunction;
+  ReactPropTypes.PropTypes = ReactPropTypes;
+
+  return ReactPropTypes;
+};
+
+
+/***/ }),
+/* 202 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/**
+ * Copyright 2013-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree. An additional grant
+ * of patent rights can be found in the PATENTS file in the same directory.
+ */
+
+if (false) {
+  var REACT_ELEMENT_TYPE = (typeof Symbol === 'function' &&
+    Symbol.for &&
+    Symbol.for('react.element')) ||
+    0xeac7;
+
+  var isValidElement = function(object) {
+    return typeof object === 'object' &&
+      object !== null &&
+      object.$$typeof === REACT_ELEMENT_TYPE;
+  };
+
+  // By explicitly using `prop-types` you are opting into new development behavior.
+  // http://fb.me/prop-types-in-prod
+  var throwOnDirectAccess = true;
+  module.exports = require('./factoryWithTypeCheckers')(isValidElement, throwOnDirectAccess);
+} else {
+  // By explicitly using `prop-types` you are opting into new production behavior.
+  // http://fb.me/prop-types-in-prod
+  module.exports = __webpack_require__(201)();
+}
+
+
+/***/ }),
+/* 203 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _react = __webpack_require__(24);
+
+var _react2 = _interopRequireDefault(_react);
+
+var _propTypes = __webpack_require__(202);
+
+var _propTypes2 = _interopRequireDefault(_propTypes);
+
+var _bootstrapSlider = __webpack_require__(95);
+
+var _bootstrapSlider2 = _interopRequireDefault(_bootstrapSlider);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var TimeSlider = function (_Component) {
+	_inherits(TimeSlider, _Component);
+
+	function TimeSlider(props) {
+		_classCallCheck(this, TimeSlider);
+
+		var _this = _possibleConstructorReturn(this, (TimeSlider.__proto__ || Object.getPrototypeOf(TimeSlider)).call(this, props));
+
+		_this.state = {};
+		_this.lastTime = 0;
+		_this.elapsedTime = 0;
+
+		_this.onPause = _this.onPause.bind(_this);
+		_this.onPlay = _this.onPlay.bind(_this);
+		_this.onTick = _this.onTick.bind(_this);
+		_this.onSlide = _this.onSlide.bind(_this);
+		return _this;
+	}
+
+	_createClass(TimeSlider, [{
+		key: 'componentWillReceiveProps',
+		value: function componentWillReceiveProps(nextProps) {
+			this.slider.setAttribute('max', nextProps.max);
+		}
+	}, {
+		key: 'onPause',
+		value: function onPause() {
+			this.setState({ playing: false });
+		}
+	}, {
+		key: 'onPlay',
+		value: function onPlay() {
+			var _this2 = this;
+
+			this.setState({ playing: true });
+			requestAnimationFrame(function (t) {
+				_this2.lastTime = t;
+				_this2.onTick(t);
+			});
+		}
+	}, {
+		key: 'onTick',
+		value: function onTick(time) {
+			if (this.lastTime) {
+				var dt = (time - this.lastTime) * 0.001;
+				this.elapsedTime += dt;
+			} else {
+				this.elapsedTime = 0;
+			}
+
+			this.slider.setValue(this.elapsedTime);
+			this.lastTime = time;
+
+			this.props.onStep(this.elapsedTime);
+
+			if (this.state.playing) {
+				if (this.elapsedTime >= this.props.max) {
+					this.setState({ playing: false });
+					this.elapsedTime = 0;
+				} else {
+					requestAnimationFrame(this.onTick);
+				}
+			}
+		}
+	}, {
+		key: 'onSlide',
+		value: function onSlide(time) {
+			this.onPause();
+			this.elapsedTime = time;
+			this.props.onStep(time);
+		}
+	}, {
+		key: 'componentDidMount',
+		value: function componentDidMount() {
+			this.slider = new _bootstrapSlider2.default('#timeSlider');
+			this.slider.on('slide', this.onSlide);
+			this.slider.setAttribute('max', this.props.max);
+		}
+	}, {
+		key: 'render',
+		value: function render() {
+			var playing = this.state.playing;
+
+
+			return _react2.default.createElement(
+				'div',
+				{ className: 'row' },
+				playing ? _react2.default.createElement(
+					'button',
+					{ type: 'button', onClick: this.onPause, className: 'btn' },
+					_react2.default.createElement('span', { className: 'glyphicon glyphicon-pause', title: 'Pause animation' })
+				) : _react2.default.createElement(
+					'button',
+					{ type: 'button', onClick: this.onPlay, className: 'btn' },
+					_react2.default.createElement('span', { className: 'glyphicon glyphicon-play', title: 'Animate last throw' })
+				),
+				_react2.default.createElement(
+					'span',
+					{ className: 'padded' },
+					_react2.default.createElement('input', { id: 'timeSlider',
+						type: 'text',
+						'data-provide': 'slider',
+						'data-slider-min': '0',
+						'data-slider-step': '0.01',
+						'data-slider-value': '0' })
+				)
+			);
+		}
+	}]);
+
+	return TimeSlider;
+}(_react.Component);
+
+TimeSlider.propTypes = {
+	onStep: _propTypes2.default.func
+};
+
+exports.default = TimeSlider;
 
 /***/ })
 /******/ ]);

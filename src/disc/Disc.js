@@ -1,21 +1,20 @@
-import DiscCalculator, {DISC_CONTOUR} from 'disc/DiscCalculator'
+import {FR_RADIUS, FR_HEIGHT} from 'disc/DiscCalculator'
 import DiscState, {UP, OMEGA, TORQUE, POS, VEL, LIFT, DRAG, D1, D2, D3, FORCE} from 'disc/DiscState'
 
 // Draw the path of the disc
 export const PATH = 'path'
 
-
-
-const DISC_POINTS = [
-	new THREE.Vector2(0, 0),
-	new THREE.Vector2(0.15, 0),
-	new THREE.Vector2(0.2, -0.005),
-	new THREE.Vector2(0.23, -0.007),
-	new THREE.Vector2(0.25, -0.01),
-	new THREE.Vector2(0.24, -0.02)
+// Shape of the disc
+const DISC_CONTOUR = [
+	new THREE.Vector2( 0,                 0                ),
+	new THREE.Vector2( 0.8  * FR_RADIUS,  0                ),
+	new THREE.Vector2( 0.97 * FR_RADIUS, -0.32 * FR_HEIGHT ),
+	new THREE.Vector2( 1.0  * FR_RADIUS, -0.72 * FR_HEIGHT ),
+	new THREE.Vector2( 0.98 * FR_RADIUS, -1.0 * FR_HEIGHT  )
 ]
 
 const VY = new THREE.Vector3(0,1,0)
+
 // Vectors that can be drawn, and their colors
 const DRAWABLE_VECTORS = {
 	[LIFT]: 0x00AA50,
@@ -52,30 +51,29 @@ const moveLine = (line, a, b) => {
 	line.geometry.computeBoundingSphere()
 }
 
-
+/**
+ * Class for drawing the disc (and related disc state stuff)
+ */
 class Disc {
 	constructor(scene) {
 		this.show = {}
 		this.scene = scene
 
-		this.initialState = new DiscState()
-		this.currentState = this.initialState
+		this.currentState = new DiscState()
 		this.createDiscMesh()
 	}
 
-	setInitial(key, value) {
-		this.initialState[key] = value
-		this.gotoInitialState()
+	setShow(type, shown) {
+		this.show[type] = !!shown
+		this.showOrHideExtras()
 	}
 
-	setShow(show) {
-		this.show[show] = !this.show[show]
-		if(this.steps) {
-			this.showOrHideExtras()
-		}
+	setSteps(steps) {
+		this.steps = steps
+		this.showOrHidePath()
 	}
 
-	gotoState(state) {
+	setState(state) {
 		this.currentState = state
 		this.discMesh.position.copy(state[POS])
 		this.discMesh.quaternion.setFromUnitVectors(VY, state[UP])
@@ -83,35 +81,18 @@ class Disc {
 		Object.keys(DRAWABLE_VECTORS).forEach(v => this.moveVector(v))
 	}
 
-	gotoInitialState() {
-		this.gotoState(this.initialState)
-		this.steps = null
-	}
-
-	throw(update, done) {
-		this.gotoInitialState()
-		const self = this
-		const calc = new DiscCalculator(this.initialState)
-		calc.calculate(update, steps => {
-			self.steps = steps
-			self.showOrHideExtras()
-			done(steps)
-		})
-	}
-
-	getSteps() {
-		return this.steps
-	}
-
 	// Show/hide optional stuff
 	showOrHideExtras() {
+		this.showOrHidePath()
+		Object.keys(DRAWABLE_VECTORS).forEach(v => this.createOrHideVector(v))
+	}
+
+	showOrHidePath() {
 		if(this.show[PATH]) {
 			this.createPath()
 		} else {
 			this.hidePath()
 		}
-
-		Object.keys(DRAWABLE_VECTORS).forEach(v => this.createOrHideVector(v))
 	}
 
 	createDiscMesh() {
@@ -140,6 +121,9 @@ class Disc {
 	createPath() {
 		this.hidePath()
 		const {steps} = this
+		if(!steps) {
+			return
+		}
 
 		const geom = new THREE.BufferGeometry()
 		const material = new THREE.LineBasicMaterial({
