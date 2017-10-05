@@ -18,9 +18,11 @@ class World {
 	}
 
 	init(worldElement) {
+		this.worldElement = worldElement
 		this.scene = new THREE.Scene()
+		const dim = getRealDimensions(worldElement)
 
-		this.camera = new THREE.PerspectiveCamera( 75, worldElement.offsetWidth / worldElement.offsetHeight, 0.1, 1000 )
+		this.camera = new THREE.PerspectiveCamera( 75, dim.width / dim.height, 0.1, 1000 )
 		this.camera.lookAt(new THREE.Vector3(0, 2, 0))
 		this.camera.position.set(-1, 2, -1)
 		const controls = new THREE.OrbitControls(this.camera, worldElement)
@@ -28,13 +30,20 @@ class World {
 		this.scene.add(new THREE.AmbientLight(0x404040))
 		this.scene.add(new THREE.DirectionalLight(0xFFFFFF, 0.5))
 
-		const dim = getRealDimensions(worldElement)
 		this.renderer = new THREE.WebGLRenderer()
 		this.renderer.setSize(dim.width, dim.height)
 		worldElement.appendChild(this.renderer.domElement)
 
+		window.addEventListener('resize', () => this.onResize(), true)
 		//this.scene.add(new THREE.AxisHelper(1))
 		this.startAnimation()
+	}
+
+	onResize() {
+		const dim = getRealDimensions(this.worldElement)
+		this.renderer.setSize(dim.width, dim.height)
+		this.camera.aspect = dim.width / dim.height
+		this.camera.updateProjectionMatrix()
 	}
 
 	startAnimation() {

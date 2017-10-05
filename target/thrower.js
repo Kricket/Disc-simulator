@@ -59,7 +59,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "9a4e3b28abd21297341c"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "a0726aa6cd53675ee199"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
@@ -66551,9 +66551,13 @@ var World = function () {
 	_createClass(World, [{
 		key: 'init',
 		value: function init(worldElement) {
-			this.scene = new THREE.Scene();
+			var _this = this;
 
-			this.camera = new THREE.PerspectiveCamera(75, worldElement.offsetWidth / worldElement.offsetHeight, 0.1, 1000);
+			this.worldElement = worldElement;
+			this.scene = new THREE.Scene();
+			var dim = getRealDimensions(worldElement);
+
+			this.camera = new THREE.PerspectiveCamera(75, dim.width / dim.height, 0.1, 1000);
 			this.camera.lookAt(new THREE.Vector3(0, 2, 0));
 			this.camera.position.set(-1, 2, -1);
 			var controls = new THREE.OrbitControls(this.camera, worldElement);
@@ -66561,13 +66565,23 @@ var World = function () {
 			this.scene.add(new THREE.AmbientLight(0x404040));
 			this.scene.add(new THREE.DirectionalLight(0xFFFFFF, 0.5));
 
-			var dim = getRealDimensions(worldElement);
 			this.renderer = new THREE.WebGLRenderer();
 			this.renderer.setSize(dim.width, dim.height);
 			worldElement.appendChild(this.renderer.domElement);
 
+			window.addEventListener('resize', function () {
+				return _this.onResize();
+			}, true);
 			//this.scene.add(new THREE.AxisHelper(1))
 			this.startAnimation();
+		}
+	}, {
+		key: 'onResize',
+		value: function onResize() {
+			var dim = getRealDimensions(this.worldElement);
+			this.renderer.setSize(dim.width, dim.height);
+			this.camera.aspect = dim.width / dim.height;
+			this.camera.updateProjectionMatrix();
 		}
 	}, {
 		key: 'startAnimation',
